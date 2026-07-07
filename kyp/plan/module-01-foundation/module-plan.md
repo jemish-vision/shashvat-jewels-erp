@@ -10,7 +10,7 @@ A bootable monorepo where: both apps start, the **entire** database schema exist
 
 ## Scope
 
-- In: workspace scaffold, tooling, Docker dev infra, full Prisma schema + migration + seed skeleton, shared-types package, Express/Next bootstraps, test harnesses, CI.
+- In: workspace scaffold, tooling, Docker dev infra, full Prisma schema + migration + seed skeleton, shared-types package, Express/Next bootstraps, test harnesses.
 - Out: any business endpoint, any real UI, auth logic (Module 02/03), design-system components (Module 04 builds the shell; here only tokens land in `globals.css`).
 
 ---
@@ -80,10 +80,8 @@ Frontend:
    - unit: `money.ts` (rounding, Decimal exactness — `0.1 + 0.2` class of cases), `carat.ts`, error classes → envelope mapping
    - integration: `/health` 200; error-handler envelope shape for each of the four error classes; seed idempotency
    - web: api-client parses success + error envelopes; a token exists smoke (CSS var present)
-4. **CI (GitHub Actions):** on push — install, typecheck, lint, unit; on PR — plus integration (services: postgres) and web tests. Cache pnpm.
-5. Coverage reporting wired (gates activate from Module 03 when logic exists).
-
-**Done when:** CI green on a fresh clone; a deliberately broken money test fails CI (harness proven).
+4. Coverage reporting wired (gates activate from Module 03 when logic exists).
+**Done when:** a deliberately broken money test fails our test harness (harness proven).
 
 ---
 
@@ -96,7 +94,6 @@ Frontend:
 - [x] Design tokens in `globals.css` matching design-system.md
 - [x] API tests: 17 unit + 8 integration passing
 - [x] Web test harness: 18 tests (unit + MSW api-client + CSS tokens)
-- [x] CI pipeline (GitHub Actions) — `.github/workflows/ci.yml`
 - [ ] ESLint config not yet installed — deferred to Module 02
 
 ## Risks / notes

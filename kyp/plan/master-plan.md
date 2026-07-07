@@ -43,7 +43,7 @@ Phases:
 3. Full Prisma schema (all 53 tables, ARCHITECTURE.md §5–14) + initial migration
 4. `packages/shared-types` (SessionPayload, ApiResponse/Paginated, error codes, enums)
 5. App skeletons (Express: app.ts + error-handler + health; Next: fonts + design tokens + empty route groups)
-6. **Testing** — Vitest harness both apps, integration DB setup, CI pipeline
+6. **Testing** — Vitest harness both apps, integration DB setup
 
 Detail: [module-01-foundation/module-plan.md](module-01-foundation/module-plan.md)
 

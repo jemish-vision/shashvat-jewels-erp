@@ -35,7 +35,7 @@ E2E seeds through the API/seed script, never through UI-only setup. Each run get
 - MSW handlers mirror real backend shapes from `packages/shared-types` — when the contract changes, handlers fail to compile, which is the point.
 - Fixed clock for date-sensitive UI (aging, expiry chips).
 - Accessibility smoke: RTL queries by role/label double as a11y checks; add `axe` scan on key pages in E2E.
-- CI: unit + component on every push; E2E on PR to main.
+- Run: `pnpm --filter web test` for unit + component tests; E2E with `pnpm --filter web test:e2e`.
 
 ```
 pnpm --filter web test        # unit + component
