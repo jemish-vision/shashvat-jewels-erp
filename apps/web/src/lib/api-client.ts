@@ -1,5 +1,6 @@
 import { env } from '@/config/env';
 import type { ApiResult } from '@shashvat/shared-types';
+import { getAccessToken, setAccessToken } from './auth-token';
 
 class ApiError extends Error {
   code: string;
@@ -16,10 +17,54 @@ export { ApiError };
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${env.apiUrl}${path}`;
+  const token = getAccessToken();
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(url, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: { ...headers, ...(init?.headers as Record<string, string> | undefined) },
   });
+
+  // On 401, attempt token refresh once
+  if (res.status === 401 && token) {
+    const refreshToken = localStorage.getItem('shashvat_refresh_token');
+    if (refreshToken) {
+      try {
+        const refreshRes = await fetch(`${env.apiUrl}/api/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+
+        const refreshBody = await refreshRes.json();
+        if (refreshBody.success) {
+          setAccessToken(refreshBody.data.accessToken);
+          localStorage.setItem('shashvat_refresh_token', refreshBody.data.refreshToken);
+
+          // Retry original request with new token
+          headers['Authorization'] = `Bearer ${refreshBody.data.accessToken}`;
+          const retryRes = await fetch(url, {
+            ...init,
+            headers: { ...headers, ...(init?.headers as Record<string, string> | undefined) },
+          });
+          const retryBody = (await retryRes.json()) as ApiResult<T>;
+          if (!retryBody.success) {
+            throw new ApiError(retryBody.error.code, retryBody.error.message, retryBody.error.details);
+          }
+          return retryBody.data;
+        }
+      } catch {
+        // Refresh failed — fall through to throw original error
+      }
+    }
+  }
 
   const body = (await res.json()) as ApiResult<T>;
 

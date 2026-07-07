@@ -292,7 +292,6 @@ shashvat-jewels-platform/
 |   |   |   |
 |   |   |   +-- types/
 |   |   |   |   +-- index.ts
-|   |   |   |   +-- next-auth.d.ts           # Session: companyId, branchId, role
 |   |   |   |
 |   |   |   +-- config/
 |   |   |   |   +-- site.ts
@@ -1936,7 +1935,7 @@ Additional practices:
 
 | Concern | Library |
 |---|---|
-| Auth (frontend) | Auth.js (NextAuth v5) — credentials, JWT with companyId/branchId/role |
+| Auth (frontend) | Custom auth context — JWT stored in memory, refresh token in localStorage, auto-attach Bearer via api-client |
 | Auth (backend) | jsonwebtoken + custom middleware |
 | Validation | Zod |
 | UI | Tailwind CSS + shadcn/ui |

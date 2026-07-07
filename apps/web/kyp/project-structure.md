@@ -24,7 +24,7 @@ apps/web/
     |   +-- barcode/             # barcode-label (bwip-js), scanner-input
     +-- hooks/                   # use-permissions, use-notifications, use-debounce, use-barcode-scanner
     +-- lib/                     # api-client, money, carat, dates, constants
-    +-- types/                   # index.ts, next-auth.d.ts (session augmentation)
+    +-- types/                   # index.ts
     +-- config/                  # site.ts, navigation.ts (nav+permission map), env.ts
     +-- middleware.ts            # route-group guard + auto-redirect (§17/§19)
 ```

@@ -47,3 +47,9 @@ export class NotFoundError extends AppError {
     super(404, ErrorCodes.NOT_FOUND, message);
   }
 }
+
+export class DuplicateEntityError extends AppError {
+  constructor(message = 'Entity already exists') {
+    super(409, ErrorCodes.DUPLICATE_ENTITY, message);
+  }
+}

@@ -49,7 +49,7 @@ The platform layer works end to end: a super admin logs in through the single lo
 ## Phase 3 — Frontend: login page + super admin portal
 
 1. `(auth)/login/page.tsx` — per §17.1 and design system: card on `--background` canvas, brand gradient logo tile, **email + password only**, no company/role/branch anything. Inline field errors (Zod), top-level error for `INVALID_CREDENTIALS`, submit pending state. `forgot-password` page: static "contact administrator" v1 (real reset flow deferred; note in decisions.md).
-2. Auth wiring: Auth.js credentials provider calling `POST /api/auth/login`; JWT + session callbacks carry `SessionPayload`; `types/next-auth.d.ts` augmentation; `api-client` attaches access token, auto-refresh on 401 once, then sign-out.
+2. Auth wiring: Custom `AuthProvider` (`src/lib/auth-context.tsx`) wraps the app; `api-client.ts` auto-attaches Bearer token from module-level variable, auto-refreshes on 401 once, then redirects to login.
 3. `middleware.ts` (first version of §17.3): unauthenticated → `/login`; `role === 'SUPER_ADMIN'` → `/(super-admin)`; any other session → placeholder `/(dashboard)` (Module 03 completes); super admin hitting `(dashboard)` routes → redirected back.
 4. `(super-admin)` shell: `super-admin-sidebar.tsx` (272px, design tokens — nav: Dashboard, Companies, Audit Log, Settings), topbar (breadcrumb + profile + logout). Super admin portal MAY use platform vocabulary — §19.1 restricts tenant UI only.
 5. Companies feature (`features/super-admin/`):

@@ -37,7 +37,7 @@ Dependency direction: `app → features → components/hooks/lib`. Features neve
 ## Data flow
 
 - **Server state**: TanStack Query hooks in each feature's `queries.ts`, calling `api-client`. See [state-management.md](state-management.md).
-- **Auth**: Auth.js (NextAuth v5) credentials flow → stores the backend JWT; `api-client` attaches it; session shape mirrors `SessionPayload` from `packages/shared-types`.
+- **Auth**: Custom auth context (`src/lib/auth-context.tsx`) — JWT stored in memory, refresh token in localStorage; `api-client` auto-attaches Bearer token from module-level var; session shape mirrors `SessionPayload` from `packages/shared-types`.
 - **Errors**: `api-client` normalizes the backend envelope; components switch on `error.code` (catalog in `packages/shared-types/src/error-codes.ts`). Validation `details` map to form field errors.
 - **Money/carats**: render via `lib/money.ts` / `lib/carat.ts` only — no ad-hoc `toFixed`.
 

@@ -3,13 +3,13 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = request.cookies.get('session');
 
   if (pathname.startsWith('/login') || pathname.startsWith('/_next') || pathname.startsWith('/api')) {
     return NextResponse.next();
   }
 
-  if (!session) {
+  const authToken = request.cookies.get('auth-token');
+  if (!authToken) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

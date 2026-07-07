@@ -38,7 +38,7 @@ Filters/sort/pagination live in the URL (`useSearchParams` + router replace):
 
 ## Session & permissions
 
-- `types/next-auth.d.ts` augments the session with `SessionPayload` fields (shared-types).
+- Auth state lives in `AuthContext` (`src/lib/auth-context.tsx`) with `useAuth` hook exposing `user`, `login`, `logout`, `isLoading`. The JWT payload is the source of truth for user identity, role, companyId, branchId, and permissions.
 - `use-permissions` reads `session.permissions`; `has('purchase.view')` powers `permission-gate.tsx` and `config/navigation.ts` filtering. Never fetch permissions separately; the JWT is the source.
 - Role/permission edits require re-login or token refresh to reflect — acceptable v1 behavior (backend ADR-004).
 
