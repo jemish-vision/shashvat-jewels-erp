@@ -11,7 +11,11 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is not defined in environment variables.');
+}
 
 export function authenticate(req: Request, _res: Response, next: NextFunction): void {
   const header = req.headers.authorization;
@@ -21,6 +25,9 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
 
   const token = header.slice(7);
   try {
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined in environment variables.');
+    }
     const payload = jwt.verify(token, JWT_SECRET) as SessionPayload;
     req.session = payload;
     next();

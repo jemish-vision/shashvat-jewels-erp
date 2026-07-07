@@ -10,7 +10,7 @@ Three route groups = three experiences:
 
 | Group | Who | Feel |
 |---|---|---|
-| `(auth)` | everyone | login (email + password only, §17), forgot password |
+| `(auth)` | everyone | login (email + password only, §17), forgot password, reset password |
 | `(super-admin)` | Super Admin | platform portal: companies, analytics, subscriptions |
 | `(dashboard)` | tenant users | **a standalone company ERP** — see Tenant Illusion Rule below |
 

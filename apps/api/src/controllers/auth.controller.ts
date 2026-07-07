@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { loginSchema, refreshSchema } from '../schemas/auth.schema.js';
+import { loginSchema, refreshSchema, forgotPasswordSchema, resetPasswordSchema } from '../schemas/auth.schema.js';
 import * as authService from '../services/auth.service.js';
 import { ValidationError } from '../lib/errors.js';
 import { prisma } from '../db/prisma.js';
@@ -122,6 +122,42 @@ export async function me(req: Request, res: Response, next: NextFunction) {
     }
 
     res.json({ success: true, data: session });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function forgotPassword(req: Request, res: Response, next: NextFunction) {
+  try {
+    const parsed = forgotPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ValidationError('Invalid input', parsed.error.flatten());
+    }
+
+    const result = await authService.forgotPassword(parsed.data.email);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function resetPassword(req: Request, res: Response, next: NextFunction) {
+  try {
+    const parsed = resetPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new ValidationError('Invalid input', parsed.error.flatten());
+    }
+
+    const result = await authService.resetPassword(parsed.data.token, parsed.data.password);
+    if (!result.success) {
+      res.status(400).json({
+        success: false,
+        error: { code: result.code, message: result.message },
+      });
+      return;
+    }
+
+    res.json({ success: true, data: { message: result.message } });
   } catch (err) {
     next(err);
   }

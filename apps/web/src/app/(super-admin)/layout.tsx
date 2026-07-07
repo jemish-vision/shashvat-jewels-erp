@@ -3,11 +3,11 @@ import { Topbar } from '@/components/layout/topbar';
 
 export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div className="flex min-h-screen">
       <SuperAdminSidebar />
-      <div style={{ marginLeft: 'var(--sidebar-w)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div className="ml-[var(--sidebar-w)] flex flex-1 flex-col">
         <Topbar />
-        <main style={{ padding: 24, flex: 1, background: 'var(--background)' }}>
+        <main className="flex-1 bg-background p-6 pt-[calc(var(--header-h)+1.5rem)]">
           {children}
         </main>
       </div>

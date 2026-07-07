@@ -48,7 +48,11 @@ The platform layer works end to end: a super admin logs in through the single lo
 
 ## Phase 3 — Frontend: login page + super admin portal
 
-1. `(auth)/login/page.tsx` — per §17.1 and design system: card on `--background` canvas, brand gradient logo tile, **email + password only**, no company/role/branch anything. Inline field errors (Zod), top-level error for `INVALID_CREDENTIALS`, submit pending state. `forgot-password` page: static "contact administrator" v1 (real reset flow deferred; note in decisions.md).
+1. `(auth)/login/page.tsx` — per §17.1 and design system: gradient background, brand gradient logo tile, **email + password only**, no company/role/branch anything. Inline field errors (Zod), top-level error for `INVALID_CREDENTIALS`, submit pending state. Password field includes eye toggle for show/hide. "Forgot password?" link directs to `/forgot-password`.
+
+2. `(auth)/forgot-password/page.tsx` - Email input form with validation. On success, shows "Check your email" state. In dev mode, the reset URL is displayed inline for testing. Backend: `POST /api/auth/forgot-password` generates a crypto token stored in `password_reset_tokens` table (1hr expiry). Email dispatch is TODO — currently logs the reset URL to console in dev.
+
+3. `(auth)/reset-password/page.tsx` - Reads `token` from URL search params. New password + confirm fields with eye toggles. Validates password match and min length (8 chars). On success, redirects to login with success message. Backend: `POST /api/auth/reset-password` validates token (not used, not expired) and updates password in a `$transaction`.
 2. Auth wiring: Custom `AuthProvider` (`src/lib/auth-context.tsx`) wraps the app; `api-client.ts` auto-attaches Bearer token from module-level variable, auto-refreshes on 401 once, then redirects to login.
 3. `middleware.ts` (first version of §17.3): unauthenticated → `/login`; `role === 'SUPER_ADMIN'` → `/(super-admin)`; any other session → placeholder `/(dashboard)` (Module 03 completes); super admin hitting `(dashboard)` routes → redirected back.
 4. `(super-admin)` shell: `super-admin-sidebar.tsx` (272px, design tokens — nav: Dashboard, Companies, Audit Log, Settings), topbar (breadcrumb + profile + logout). Super admin portal MAY use platform vocabulary — §19.1 restricts tenant UI only.

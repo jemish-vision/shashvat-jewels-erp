@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+    "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev:fast\"",
     "build": "pnpm -r build",
     "lint": "echo 'ESLint not configured — install after Phase 2 completion'",
     "typecheck": "pnpm -r typecheck",
