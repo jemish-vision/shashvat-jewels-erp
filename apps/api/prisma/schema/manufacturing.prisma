@@ -1,0 +1,146 @@
+model ManufacturingJob {
+  id          String   @id @default(cuid())
+  companyId   String
+  jobNo       String
+  branchId    String
+  workshopId  String?
+  workshop    Vendor?  @relation(fields: [workshopId], references: [id])
+  status      String   @default("ISSUED")
+  description String?
+  issuedById  String
+  issuedBy    User     @relation("JobIssuer", fields: [issuedById], references: [id])
+  issuedAt    DateTime @default(now())
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  issues       ManufacturingIssue[]
+  returns      ManufacturingReturn[]
+  outputPieces JewelryPiece[]
+
+  @@unique([companyId, jobNo])
+  @@index([companyId, status])
+  @@index([companyId, workshopId])
+  @@map("manufacturing_jobs")
+}
+
+model ManufacturingIssue {
+  id              String           @id @default(cuid())
+  jobId           String
+  job             ManufacturingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  inventoryItemId String
+  inventoryItem   InventoryItem    @relation(fields: [inventoryItemId], references: [id])
+  caratsIssued    Decimal          @db.Decimal(12, 3)
+  pieces          Int?
+  issuedAt        DateTime         @default(now())
+
+  @@index([jobId])
+  @@map("manufacturing_issues")
+}
+
+model ManufacturingReturn {
+  id              String           @id @default(cuid())
+  jobId           String
+  job             ManufacturingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  inventoryItemId String
+  caratsReturned  Decimal          @db.Decimal(12, 3)
+  caratsWastage   Decimal          @default(0) @db.Decimal(12, 3)
+  returnedAt      DateTime         @default(now())
+
+  @@index([jobId])
+  @@map("manufacturing_returns")
+}
+
+model PacketSplit {
+  id           String   @id @default(cuid())
+  companyId    String
+  sourceItemId String
+  createdById  String
+  createdAt    DateTime @default(now())
+
+  lines PacketSplitLine[]
+
+  @@index([companyId])
+  @@map("packet_splits")
+}
+
+model PacketSplitLine {
+  id        String      @id @default(cuid())
+  splitId   String
+  split     PacketSplit @relation(fields: [splitId], references: [id], onDelete: Cascade)
+  newItemId String
+  carats    Decimal     @db.Decimal(12, 3)
+  pieces    Int?
+
+  @@map("packet_split_lines")
+}
+
+model PacketMerge {
+  id           String   @id @default(cuid())
+  companyId    String
+  targetItemId String
+  createdById  String
+  createdAt    DateTime @default(now())
+
+  lines PacketMergeLine[]
+
+  @@index([companyId])
+  @@map("packet_merges")
+}
+
+model PacketMergeLine {
+  id           String      @id @default(cuid())
+  mergeId      String
+  merge        PacketMerge @relation(fields: [mergeId], references: [id], onDelete: Cascade)
+  sourceItemId String
+  carats       Decimal     @db.Decimal(12, 3)
+
+  @@map("packet_merge_lines")
+}
+
+model WeightAdjustment {
+  id             String             @id @default(cuid())
+  companyId      String
+  packetId       String
+  packet         LooseDiamondPacket @relation(fields: [packetId], references: [id])
+  previousCarats Decimal            @db.Decimal(12, 3)
+  newCarats      Decimal            @db.Decimal(12, 3)
+  reason         String
+  adjustedById   String
+  createdAt      DateTime           @default(now())
+
+  @@index([companyId, packetId])
+  @@map("weight_adjustments")
+}
+
+model StockReconciliation {
+  id          String   @id @default(cuid())
+  companyId   String
+  branchId    String
+  status      String   @default("IN_PROGRESS")
+  startedById String
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  notes       String?
+
+  items StockReconciliationItem[]
+
+  @@index([companyId, branchId, status])
+  @@map("stock_reconciliations")
+}
+
+model StockReconciliationItem {
+  id               String              @id @default(cuid())
+  reconciliationId String
+  reconciliation   StockReconciliation @relation(fields: [reconciliationId], references: [id], onDelete: Cascade)
+  inventoryItemId  String
+  systemCarats     Decimal?            @db.Decimal(12, 3)
+  physicalCarats   Decimal?            @db.Decimal(12, 3)
+  systemFound      Boolean             @default(true)
+  physicalFound    Boolean             @default(false)
+  variance         Decimal?            @db.Decimal(12, 3)
+  resolution       String?
+
+  @@index([reconciliationId])
+  @@map("stock_reconciliation_items")
+}

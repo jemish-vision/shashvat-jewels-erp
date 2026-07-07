@@ -1,0 +1,25 @@
+model StockMovement {
+  id            String   @id @default(cuid())
+  companyId     String
+  itemId        String
+  item          InventoryItem @relation(fields: [itemId], references: [id])
+  movementType  String
+  fromStatus    String?
+  toStatus      String?
+  fromBranchId  String?
+  toBranchId    String?
+  carats        Decimal?  @db.Decimal(12, 3)
+  pieces        Int?
+  refType       String?
+  refId         String?
+  performedById String
+  performedBy   User      @relation(fields: [performedById], references: [id])
+  notes         String?
+  createdAt     DateTime  @default(now())
+
+  @@index([companyId, itemId, createdAt])
+  @@index([companyId, movementType, createdAt])
+  @@index([companyId, refType, refId])
+  @@index([companyId, createdAt])
+  @@map("stock_movements")
+}

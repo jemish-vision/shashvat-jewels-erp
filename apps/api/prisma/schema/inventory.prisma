@@ -1,0 +1,148 @@
+model InventoryItem {
+  id              String   @id @default(cuid())
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  itemType        String
+  barcode         String
+  status          String   @default("IN_STOCK")
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  costPrice       Decimal  @db.Decimal(14, 2)
+  listPrice       Decimal  @db.Decimal(14, 2)
+  purchaseItemId  String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  certifiedDiamond    CertifiedDiamond?
+  loosePacket         LooseDiamondPacket?
+  jewelryPiece        JewelryPiece?
+  stockMovements      StockMovement[]
+  saleItems           SaleItem[]
+  memoItems           MemoItem[]
+  holds               Hold[]
+  transferItems       BranchTransferItem[]
+  purchaseReturnItems PurchaseReturnItem[]
+  manufacturingIssues ManufacturingIssue[]
+
+  @@unique([companyId, barcode])
+  @@index([companyId, itemType, status, branchId])
+  @@index([companyId, branchId, status])
+  @@index([companyId, status])
+  @@map("inventory_items")
+}
+
+model CertifiedDiamond {
+  id             String  @id @default(cuid())
+  itemId         String  @unique
+  item           InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  stoneId        String
+  certificateNo  String
+  lab            String
+  certificateUrl String?
+  shape          String
+  caratWeight    Decimal @db.Decimal(10, 3)
+  color          String
+  fancyColor     String?
+  clarity        String
+  cut            String?
+  polish         String?
+  symmetry       String?
+  fluorescence   String?
+  measurements   String?
+  depthPct       Decimal? @db.Decimal(5, 2)
+  tablePct       Decimal? @db.Decimal(5, 2)
+  rapRate        Decimal? @db.Decimal(14, 2)
+  rapDiscount    Decimal? @db.Decimal(6, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([shape, caratWeight, color, clarity])
+  @@index([lab])
+  @@index([caratWeight])
+  @@map("certified_diamonds")
+}
+
+model Parcel {
+  id          String   @id @default(cuid())
+  companyId   String
+  parcelNo    String
+  description String?
+  totalCarats Decimal  @db.Decimal(12, 3)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  packets LooseDiamondPacket[]
+
+  @@unique([companyId, parcelNo])
+  @@index([companyId])
+  @@map("parcels")
+}
+
+model LooseDiamondPacket {
+  id              String  @id @default(cuid())
+  itemId          String  @unique
+  item            InventoryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  packetNo        String
+  parcelId        String?
+  parcel          Parcel? @relation(fields: [parcelId], references: [id])
+  shape           String?
+  isMixed         Boolean @default(false)
+  sieveSize       String?
+  sizeDescription String?
+  colorRange      String?
+  clarityRange    String?
+  pieces          Int?
+  totalCarats     Decimal @db.Decimal(12, 3)
+  availableCarats Decimal @db.Decimal(12, 3)
+  ratePerCarat    Decimal @db.Decimal(14, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  weightAdjustments WeightAdjustment[]
+
+  @@index([parcelId])
+  @@index([shape, sieveSize])
+  @@map("loose_diamond_packets")
+}
+
+model JewelryCategory {
+  id        String            @id @default(cuid())
+  companyId String
+  name      String
+  parentId  String?
+  parent    JewelryCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  JewelryCategory[] @relation("CategoryTree")
+  pieces    JewelryPiece[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@map("jewelry_categories")
+}
+
+model JewelryPiece {
+  id              String          @id @default(cuid())
+  itemId          String          @unique
+  item            InventoryItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  sku             String
+  name            String
+  categoryId      String
+  category        JewelryCategory @relation(fields: [categoryId], references: [id])
+  metalType       String
+  grossWeight     Decimal         @db.Decimal(10, 3)
+  netWeight       Decimal         @db.Decimal(10, 3)
+  diamondCarats   Decimal?        @db.Decimal(10, 3)
+  diamondPieces   Int?
+  makingCharge    Decimal?        @db.Decimal(14, 2)
+  description     String?
+  manufacturingJobId String?
+  manufacturingJob   ManufacturingJob? @relation(fields: [manufacturingJobId], references: [id])
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([categoryId])
+  @@index([metalType])
+  @@map("jewelry_pieces")
+}

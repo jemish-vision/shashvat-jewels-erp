@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: shashvat-postgres
+    environment:
+      POSTGRES_USER: shashvat
+      POSTGRES_PASSWORD: shashvat_dev
+      POSTGRES_DB: shashvat_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: shashvat-minio
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: shashvat_minio
+      MINIO_ROOT_PASSWORD: shashvat_minio_secret
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio-data:/data
+
+volumes:
+  postgres-data:
+  minio-data:

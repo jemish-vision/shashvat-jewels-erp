@@ -1,0 +1,68 @@
+model SuperAdmin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("SUPER_ADMIN")
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  platformAuditLogs PlatformAuditLog[]
+
+  @@map("super_admins")
+}
+
+model Company {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  email        String?
+  phone        String?
+  address      String?
+  city         String?
+  country      String   @default("India")
+  baseCurrency String   @default("INR")
+  taxId        String?
+  logoUrl      String?
+  status       String   @default("TRIAL")
+  trialEndsAt  DateTime?
+  plan         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  users          User[]
+  roles          Role[]
+  branches       Branch[]
+  customers      Customer[]
+  vendors        Vendor[]
+  currencies     Currency[]
+  inventoryItems InventoryItem[]
+  purchases      Purchase[]
+  sales          Sale[]
+  memos          Memo[]
+  accounts       Account[]
+  payments       Payment[]
+
+  @@index([status])
+  @@map("companies")
+}
+
+model PlatformAuditLog {
+  id           String   @id @default(cuid())
+  superAdminId String?
+  superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
+  action       String
+  targetType   String?
+  targetId     String?
+  before       Json?
+  after        Json?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@index([superAdminId, createdAt])
+  @@map("platform_audit_logs")
+}

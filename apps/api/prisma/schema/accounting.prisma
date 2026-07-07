@@ -1,0 +1,100 @@
+model Account {
+  id        String     @id @default(cuid())
+  companyId String
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  code      String
+  name      String
+  type      String
+  parentId  String?
+  parent    Account?   @relation("AccountTree", fields: [parentId], references: [id])
+  children  Account[]  @relation("AccountTree")
+  isSystem  Boolean    @default(false)
+  isActive  Boolean    @default(true)
+
+  journalLines JournalLine[]
+
+  @@unique([companyId, code])
+  @@index([companyId, type])
+  @@map("accounts")
+}
+
+model JournalEntry {
+  id         String   @id @default(cuid())
+  companyId  String
+  entryNo    String
+  entryDate  DateTime @db.Date
+  memo       String?
+  refType    String?
+  refId      String?
+  postedById String
+  createdAt  DateTime @default(now())
+
+  lines JournalLine[]
+
+  @@unique([companyId, entryNo])
+  @@index([companyId, refType, refId])
+  @@index([companyId, entryDate])
+  @@map("journal_entries")
+}
+
+model JournalLine {
+  id        String       @id @default(cuid())
+  entryId   String
+  entry     JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account      @relation(fields: [accountId], references: [id])
+  debit     Decimal      @default(0) @db.Decimal(14, 2)
+  credit    Decimal      @default(0) @db.Decimal(14, 2)
+
+  @@index([accountId])
+  @@index([entryId])
+  @@map("journal_lines")
+}
+
+model Payment {
+  id           String   @id @default(cuid())
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  paymentNo    String
+  direction    String
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  vendorId     String?
+  vendor       Vendor?  @relation(fields: [vendorId], references: [id])
+  branchId     String
+  method       String
+  currencyId   String
+  currency     Currency @relation(fields: [currencyId], references: [id])
+  exchangeRate Decimal  @db.Decimal(14, 6)
+  amount       Decimal  @db.Decimal(14, 2)
+  baseAmount   Decimal  @db.Decimal(14, 2)
+  reference    String?
+  paymentDate  DateTime @db.Date
+  receivedById String
+  receivedBy   User     @relation(fields: [receivedById], references: [id])
+  notes        String?
+  createdAt    DateTime @default(now())
+  deletedAt    DateTime?
+
+  allocations PaymentAllocation[]
+
+  @@unique([companyId, paymentNo])
+  @@index([companyId, customerId, paymentDate])
+  @@index([companyId, vendorId, paymentDate])
+  @@index([companyId, branchId, paymentDate])
+  @@map("payments")
+}
+
+model PaymentAllocation {
+  id         String  @id @default(cuid())
+  paymentId  String
+  payment    Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  saleId     String?
+  sale       Sale?   @relation(fields: [saleId], references: [id])
+  purchaseId String?
+  amount     Decimal @db.Decimal(14, 2)
+
+  @@index([paymentId])
+  @@index([saleId])
+  @@map("payment_allocations")
+}

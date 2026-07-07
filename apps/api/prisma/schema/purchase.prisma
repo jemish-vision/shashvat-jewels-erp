@@ -1,0 +1,92 @@
+model Purchase {
+  id                 String   @id @default(cuid())
+  companyId          String
+  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  purchaseNo         String
+  vendorId           String
+  vendor             Vendor   @relation(fields: [vendorId], references: [id])
+  branchId           String
+  isImport           Boolean  @default(false)
+  status             String   @default("DRAFT")
+  currencyId         String
+  currency           Currency @relation(fields: [currencyId], references: [id])
+  exchangeRate       Decimal  @db.Decimal(14, 6)
+  subtotal           Decimal  @db.Decimal(14, 2)
+  freightCharge      Decimal  @default(0) @db.Decimal(14, 2)
+  dutyCharge         Decimal  @default(0) @db.Decimal(14, 2)
+  otherCharges       Decimal  @default(0) @db.Decimal(14, 2)
+  grandTotal         Decimal  @db.Decimal(14, 2)
+  baseTotal          Decimal  @db.Decimal(14, 2)
+  supplierInvoiceNo  String?
+  supplierInvoiceDate DateTime? @db.Date
+  paymentDueDate     DateTime? @db.Date
+  createdById        String
+  createdBy          User     @relation("PurchaseCreator", fields: [createdById], references: [id])
+  approvedById       String?
+  approvedBy         User?    @relation("PurchaseApprover", fields: [approvedById], references: [id])
+  approvedAt         DateTime?
+  receivedById       String?
+  receivedBy         User?    @relation("PurchaseReceiver", fields: [receivedById], references: [id])
+  receivedAt         DateTime?
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  deletedAt          DateTime?
+
+  items   PurchaseItem[]
+  returns PurchaseReturn[]
+
+  @@unique([companyId, purchaseNo])
+  @@index([companyId, vendorId, createdAt])
+  @@index([companyId, branchId, status])
+  @@index([companyId, status])
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id              String   @id @default(cuid())
+  purchaseId      String
+  purchase        Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  itemType        String
+  description     String
+  pieces          Int?
+  carats          Decimal? @db.Decimal(12, 3)
+  ratePerCarat    Decimal? @db.Decimal(14, 2)
+  unitCost        Decimal  @db.Decimal(14, 2)
+  lineTotal       Decimal  @db.Decimal(14, 2)
+  landedCost      Decimal? @db.Decimal(14, 2)
+  inventoryItemId String?  @unique
+
+  @@index([purchaseId])
+  @@map("purchase_items")
+}
+
+model PurchaseReturn {
+  id          String   @id @default(cuid())
+  companyId   String
+  returnNo    String
+  purchaseId  String
+  purchase    Purchase @relation(fields: [purchaseId], references: [id])
+  reason      String?
+  totalAmount Decimal  @db.Decimal(14, 2)
+  createdById String
+  createdAt   DateTime @default(now())
+
+  items PurchaseReturnItem[]
+
+  @@unique([companyId, returnNo])
+  @@index([companyId, purchaseId])
+  @@map("purchase_returns")
+}
+
+model PurchaseReturnItem {
+  id               String         @id @default(cuid())
+  purchaseReturnId String
+  purchaseReturn   PurchaseReturn @relation(fields: [purchaseReturnId], references: [id], onDelete: Cascade)
+  inventoryItemId  String
+  inventoryItem    InventoryItem  @relation(fields: [inventoryItemId], references: [id])
+  carats           Decimal?       @db.Decimal(12, 3)
+  amount           Decimal        @db.Decimal(14, 2)
+
+  @@map("purchase_return_items")
+}

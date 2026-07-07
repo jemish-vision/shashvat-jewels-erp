@@ -1,0 +1,104 @@
+model Memo {
+  id                 String   @id @default(cuid())
+  companyId          String
+  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  memoNo             String
+  customerId         String
+  customer           Customer @relation(fields: [customerId], references: [id])
+  branchId           String
+  status             String   @default("OPEN")
+  issuedById         String
+  issuedBy           User     @relation("MemoIssuer", fields: [issuedById], references: [id])
+  issuedAt           DateTime @default(now())
+  expectedReturnDate DateTime? @db.Date
+  closedAt           DateTime?
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  items MemoItem[]
+  sales Sale[]
+
+  @@unique([companyId, memoNo])
+  @@index([companyId, customerId, status])
+  @@index([companyId, status])
+  @@map("memos")
+}
+
+model MemoItem {
+  id              String   @id @default(cuid())
+  memoId          String
+  memo            Memo     @relation(fields: [memoId], references: [id], onDelete: Cascade)
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  carats          Decimal? @db.Decimal(12, 3)
+  memoPrice       Decimal  @db.Decimal(14, 2)
+  status          String   @default("ON_MEMO")
+  returnedAt      DateTime?
+  saleItemId      String?
+
+  @@index([memoId])
+  @@index([inventoryItemId, status])
+  @@map("memo_items")
+}
+
+model Hold {
+  id              String   @id @default(cuid())
+  companyId       String
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  customerId      String
+  customer        Customer @relation(fields: [customerId], references: [id])
+  status          String   @default("ACTIVE")
+  reason          String?
+  heldById        String
+  heldBy          User     @relation("Holder", fields: [heldById], references: [id])
+  heldAt          DateTime @default(now())
+  expiresAt       DateTime?
+  releasedAt      DateTime?
+
+  @@index([companyId, inventoryItemId, status])
+  @@index([companyId, customerId])
+  @@index([companyId, status, expiresAt])
+  @@map("holds")
+}
+
+model BranchTransfer {
+  id                 String   @id @default(cuid())
+  companyId          String
+  transferNo         String
+  fromBranchId       String
+  fromBranch         Branch   @relation("TransferFrom", fields: [fromBranchId], references: [id])
+  toBranchId         String
+  toBranch           Branch   @relation("TransferTo", fields: [toBranchId], references: [id])
+  status             String   @default("PENDING")
+  sentById           String
+  sentBy             User     @relation("TransferSender", fields: [sentById], references: [id])
+  sentAt             DateTime?
+  acknowledgedById   String?
+  acknowledgedBy     User?    @relation("TransferAcknowledger", fields: [acknowledgedById], references: [id])
+  acknowledgedAt     DateTime?
+  rejectionReason    String?
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  items BranchTransferItem[]
+
+  @@unique([companyId, transferNo])
+  @@index([companyId, fromBranchId, status])
+  @@index([companyId, toBranchId, status])
+  @@map("branch_transfers")
+}
+
+model BranchTransferItem {
+  id              String         @id @default(cuid())
+  transferId      String
+  transfer        BranchTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  inventoryItemId String
+  inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id])
+  carats          Decimal?       @db.Decimal(12, 3)
+
+  @@index([transferId])
+  @@map("branch_transfer_items")
+}
