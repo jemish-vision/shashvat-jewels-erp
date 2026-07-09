@@ -28,7 +28,7 @@ export async function list(req: Request, res: Response, next: NextFunction) {
   try {
     const query = companyListQuery.parse(req.query);
     const result = await companyService.listCompanies(query);
-    res.json({ success: true, data: result.data, pageInfo: result.pageInfo });
+    res.json({ success: true, data: { items: result.data, pageInfo: result.pageInfo } });
   } catch (err) {
     if (err instanceof z.ZodError) return next(new ValidationError('Invalid query', err.flatten()));
     next(err);

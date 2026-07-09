@@ -20,7 +20,7 @@ export default function CompaniesPage() {
     getNextPageParam: (last) => last.pageInfo.hasNextPage ? last.pageInfo.nextCursor : undefined,
   });
 
-  const companies = data?.pages.flatMap((p) => p.data) ?? [];
+  const companies = data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

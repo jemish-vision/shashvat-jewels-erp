@@ -2,6 +2,15 @@
 
 Module-wise roadmap for the whole project. Source of truth for **what gets built in what order**. Technical truth lives in [`/ARCHITECTURE.md`](../../ARCHITECTURE.md); app-level rules in `apps/api/kyp/` and `apps/web/kyp/`.
 
+## Reality snapshot (2026-07-09)
+
+Code audit revealed plan was stale. Key delta:
+- **Module 02** (Super Admin) backend + frontend fully built — was marked `planned`, actually `in-progress` (test phase remaining).
+- **Modules 03-14** (all tenant ERP) have DB schema + empty route/controller/page skeletons (0B files). No business logic written for any tenant module.
+- Only Module 01 lib-level tests exist. No route/controller/integration/E2E tests for Module 02+ exist.
+- Test factories: only `company.factory.ts` exists.
+- Playwright E2E infrastructure not installed — `test:e2e` script will fail.
+
 ## How this plan works
 
 - The project is split into **14 modules**, built in dependency order (derived from ARCHITECTURE.md §24).
@@ -9,27 +18,27 @@ Module-wise roadmap for the whole project. Source of truth for **what gets built
 - Each module gets a folder here: `kyp/plan/module-NN-<slug>/` containing:
   - `module-plan.md` — detailed module plan (created when the module is next up)
   - `phase-N-<slug>.md` — detailed phase plans, created one at a time as we reach them
-- Statuses: `pending → planned → in-progress → done`. Update the table below as modules move.
+- Statuses: `pending → scaffolded → planned → in-progress → done`. `scaffolded` = route/DB skeleton exists but no business logic. Update the table below as modules move.
 - Most modules follow the same phase skeleton: **1) DB & services → 2) API endpoints → 3) Frontend UI → 4) Integration polish → 5) Testing.** Deviations noted per module.
 
 ## Module index
 
-| # | Module | Depends on | Status |
-|---|--------|-----------|--------|
-| 01 | Foundation & Database Core | — | done ✓ |
-| 02 | Super Admin Platform Portal | 01 | planned |
-| 03 | Company Onboarding, Tenant Auth & RBAC | 02 | pending |
-| 04 | Tenant Masters & ERP Shell | 03 | pending |
-| 05 | Inventory Core & Certified Diamonds | 04 | pending |
-| 06 | Purchases | 05 | pending |
-| 07 | Sales (POS) | 05 | pending |
-| 08 | Memo, Hold & Branch Transfers | 05 | pending |
-| 09 | Loose Diamonds & Packet Operations | 05 | pending |
-| 10 | Jewelry & Manufacturing | 09 | pending |
-| 11 | Accounting | 06, 07 | pending |
-| 12 | Reports, Analytics & Reconciliation | 06–11 | pending |
-| 13 | Notifications & Background Jobs | 06–08 | pending |
-| 14 | Hardening & Launch | all | pending |
+| # | Module | Depends on | Real status | Notes |
+|---|--------|-----------|--------|-------|
+| 01 | Foundation & Database Core | — | done ✓ | Full schema (54 models), shared-types, app skeleton, test harness |
+| 02 | Super Admin Platform Portal | 01 | done ✓ | All phases complete. 46 unit + 53 integration + 41 frontend + 7 E2E tests written |
+| 03 | Company Onboarding, Tenant Auth & RBAC | 02 | scaffolded | Tenant routes/controllers exist (0B). Web pages scaffolded (0B) |
+| 04 | Tenant Masters & ERP Shell | 03 | scaffolded | Settings/customers/vendors routes empty. Web settings pages empty |
+| 05 | Inventory Core & Certified Diamonds | 04 | scaffolded | Certified diamond routes/controller/schema empty. Web pages empty |
+| 06 | Purchases | 05 | scaffolded | Route/controller empty. Web purchases pages empty |
+| 07 | Sales (POS) | 05 | scaffolded | Route/controller empty. Web sales pages empty |
+| 08 | Memo, Hold & Branch Transfers | 05 | scaffolded | Memo/hold/transfer routes empty. Web pages empty |
+| 09 | Loose Diamonds & Packet Operations | 05 | scaffolded | Loose diamond routes empty. Web pages empty |
+| 10 | Jewelry & Manufacturing | 09 | scaffolded | Jewelry/manufacturing routes empty. Web pages empty |
+| 11 | Accounting | 06, 07 | scaffolded | Accounting routes/controller/service empty. Web pages empty |
+| 12 | Reports, Analytics & Reconciliation | 06–11 | scaffolded | Report routes empty. Web pages empty |
+| 13 | Notifications & Background Jobs | 06–08 | scaffolded | Notification/job files exist (0B). Web notification page empty |
+| 14 | Hardening & Launch | all | pending | Not started |
 
 ---
 
@@ -51,11 +60,13 @@ Detail: [module-01-foundation/module-plan.md](module-01-foundation/module-plan.m
 
 **Goal:** platform layer working end to end — super admin can log in, create/suspend/delete companies, see platform dashboard.
 
+Status: Phases 1-3 done ✓, Phase 4 (testing) in progress
+
 Phases:
-1. Backend: super admin auth (login, JWT `companyId:null`), `require-super-admin.ts`, `PlatformAuditLog` writes
-2. Backend: company CRUD API + platform analytics endpoints
-3. Frontend: `(auth)` login page (email+password only, §17) + `(super-admin)` shell, companies list/new/detail, platform dashboard
-4. **Testing** — auth flows, company lifecycle, super-admin-only guard (tenant token → 403), E2E login → create company
+1. Backend: super admin auth (login, JWT `companyId:null`), `require-super-admin.ts`, `PlatformAuditLog` writes — **done**
+2. Backend: company CRUD API + platform analytics endpoints — **done**
+3. Frontend: `(auth)` login page (email+password only, §17) + `(super-admin)` shell, companies list/new/detail, platform dashboard — **done**
+4. **Testing** — auth flows, company lifecycle, super-admin-only guard (tenant token → 403), E2E login → create company — **written** (46 unit tests pass, 53 integration tests need Postgres, 41 frontend tests pass, 7 E2E specs need full stack)
 
 Detail: [module-02-super-admin/module-plan.md](module-02-super-admin/module-plan.md)
 

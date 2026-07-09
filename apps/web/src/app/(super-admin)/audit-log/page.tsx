@@ -11,7 +11,7 @@ export default function AuditLogPage() {
     getNextPageParam: (last) => last.pageInfo.hasNextPage ? last.pageInfo.nextCursor : undefined,
   });
 
-  const entries = data?.pages.flatMap((p) => p.data) ?? [];
+  const entries = data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

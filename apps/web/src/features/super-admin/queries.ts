@@ -7,7 +7,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
 export async function listCompanies(params?: {
   limit?: number; cursor?: string; search?: string; status?: string; sortBy?: string; sortDir?: string;
-}): Promise<{ data: Company[]; pageInfo: PageInfo }> {
+}): Promise<{ items: Company[]; pageInfo: PageInfo }> {
   const searchParams = new URLSearchParams();
   if (params?.limit) searchParams.set('limit', String(params.limit));
   if (params?.cursor) searchParams.set('cursor', params.cursor);
@@ -55,7 +55,7 @@ export async function deleteCompany(id: string): Promise<Company> {
 
 export async function getAuditLog(params?: {
   limit?: number; cursor?: string; targetType?: string; action?: string;
-}): Promise<{ data: AuditEntry[]; pageInfo: PageInfo }> {
+}): Promise<{ items: AuditEntry[]; pageInfo: PageInfo }> {
   const searchParams = new URLSearchParams();
   if (params?.limit) searchParams.set('limit', String(params.limit));
   if (params?.cursor) searchParams.set('cursor', params.cursor);

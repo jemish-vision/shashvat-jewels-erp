@@ -24,7 +24,7 @@ router.get('/audit-log', async (req, res, next) => {
       targetType: req.query.targetType as string | undefined,
       action: req.query.action as string | undefined,
     });
-    res.json({ success: true, data: result.data, pageInfo: result.pageInfo });
+    res.json({ success: true, data: { items: result.data, pageInfo: result.pageInfo } });
   } catch (err) {
     next(err);
   }

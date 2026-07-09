@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:fast": "node -e \"const fs=require('fs');try{fs.rmSync('.next',{recursive:true,force:true})}catch(e){}\" && next dev",
+    "dev:fast": "node scripts/clean-next.js && next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
@@ -22,6 +22,7 @@
     "react-icons": "^5.7.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^20.12.12",
