@@ -63,7 +63,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       throw new ValidationError('Invalid input', parsed.error.flatten());
     }
 
-    const result = authService.refresh(parsed.data.refreshToken);
+    const result = await authService.refresh(parsed.data.refreshToken);
     if (!result.success) {
       res.status(401).json({
         success: false,
@@ -72,7 +72,7 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
-    res.json({ success: true, data: { accessToken: result.accessToken, refreshToken: result.refreshToken } });
+    res.json({ success: true, data: { accessToken: result.accessToken, refreshToken: result.refreshToken, session: result.session } });
   } catch (err) {
     next(err);
   }

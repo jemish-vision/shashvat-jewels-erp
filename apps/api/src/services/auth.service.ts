@@ -106,7 +106,7 @@ export async function login(rawEmail: string, password: string) {
   return { success: true as const, accessToken, refreshToken, session };
 }
 
-export function refresh(refreshToken: string) {
+export async function refresh(refreshToken: string) {
   const stored = refreshTokens.get(refreshToken);
   if (!stored || stored.expiresAt < new Date()) {
     refreshTokens.delete(refreshToken);
@@ -115,17 +115,22 @@ export function refresh(refreshToken: string) {
 
   try {
     const decoded = jwt.verify(refreshToken, JWT_SECRET!) as unknown as { userId: string; type: string };
+    const session = await getSession(decoded.userId);
+    if (!session) {
+      refreshTokens.delete(refreshToken);
+      return { success: false as const, code: 'INVALID_REFRESH_TOKEN' as const };
+    }
+
     const accessToken = signAccessToken({
-      userId: decoded.userId,
-      companyId: null,
-      branchId: null,
-      role: 'SUPER_ADMIN',
-      permissions: [],
+      userId: session.userId,
+      companyId: session.companyId,
+      branchId: session.branchId,
+      role: session.role,
+      permissions: session.permissions,
     });
-    // Issue new refresh token, revoke old
     refreshTokens.delete(refreshToken);
     const newRefreshToken = signRefreshToken(decoded.userId);
-    return { success: true as const, accessToken, refreshToken: newRefreshToken };
+    return { success: true as const, accessToken, refreshToken: newRefreshToken, session };
   } catch {
     return { success: false as const, code: 'INVALID_REFRESH_TOKEN' as const };
   }
@@ -153,11 +158,14 @@ export async function getSession(userId: string) {
   const tenantUser = await prisma.user.findUnique({
     where: { id: userId },
     include: {
+      company: true,
       role: { include: { permissions: { include: { permission: true } } } },
     },
   });
 
-  if (!tenantUser) return null;
+  if (!tenantUser || !tenantUser.isActive || tenantUser.company.deletedAt || tenantUser.company.status === 'SUSPENDED') {
+    return null;
+  }
 
   const permissions = tenantUser.role.permissions.map(
     (rp) => `${rp.permission.resource}:${rp.permission.action}`

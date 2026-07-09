@@ -27,7 +27,7 @@ Code audit revealed plan was stale. Key delta:
 |---|--------|-----------|--------|-------|
 | 01 | Foundation & Database Core | — | done ✓ | Full schema (54 models), shared-types, app skeleton, test harness |
 | 02 | Super Admin Platform Portal | 01 | done ✓ | All phases complete. Unified Super/Tenant Login, auto Company Admin seeding, password toggle, custom confirm modal |
-| 03 | Company Onboarding, Tenant Auth & RBAC | 02 | scaffolded | Tenant routes/controllers exist (0B). Web pages scaffolded (0B) |
+| 03 | Company Onboarding, Tenant Auth & RBAC | 02 | planned | Detailed plan written. Partial code exists from M02 (unified login, partial seeding) + known refresh-token bug — see module plan reality audit |
 | 04 | Tenant Masters & ERP Shell | 03 | scaffolded | Settings/customers/vendors routes empty. Web settings pages empty |
 | 05 | Inventory Core & Certified Diamonds | 04 | scaffolded | Certified diamond routes/controller/schema empty. Web pages empty |
 | 06 | Purchases | 05 | scaffolded | Route/controller empty. Web purchases pages empty |
@@ -73,6 +73,8 @@ Detail: [module-02-super-admin/module-plan.md](module-02-super-admin/module-plan
 ## Module 03 — Company Onboarding, Tenant Auth & RBAC
 
 **Goal:** creating a company seeds a working tenant; tenant users log in through the same login page and land in the right place with the right permissions.
+
+Status: planned — detail: [module-03-tenant-auth-rbac/module-plan.md](module-03-tenant-auth-rbac/module-plan.md)
 
 Phases:
 1. Backend: `company.service.ts` onboarding transaction (base currency, main branch, system roles Company Admin + Branch Admin, permission matrix, CoA seed)
