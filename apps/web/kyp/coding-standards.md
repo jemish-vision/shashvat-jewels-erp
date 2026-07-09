@@ -13,7 +13,11 @@
 - One component per file; file kebab-case, export PascalCase. Small (<~150 lines) — split view vs logic (extract hooks) before it grows.
 - No business logic in components: calculations belong in `lib/` or the backend. Frontend **displays** money/margins; it does not compute financial truth.
 - Render money/carats/dates only through `lib/money.ts`, `lib/carat.ts`, `lib/dates.ts`.
-- Lists come from `components/data-table/` wrapper — don't hand-roll tables per module.
+- Standard UI Components & Layouts:
+  - **Lists & Pagination**: Use `TablePagination` (`@/components/ui/table-pagination`) and `usePaginatedQuery` (`@/hooks/use-paginated-query`).
+  - **Filters**: Use `FilterCard` (`@/components/ui/filter-card`) and `CustomSelect` (`@/components/ui/custom-select`).
+  - **Confirmation Modals**: **Never use native `window.confirm` or `window.alert`.** Always use `const { confirm } = useConfirm()` imported from `@/components/ui/confirm` (`ConfirmProvider` is wrapped in root layout).
+  - **Controlled Input Stability**: Always pass fallback empty strings (`value={form.field || ''}`) on inputs to avoid uncontrolled-to-controlled hydration warnings.
 - Gate UI with `<PermissionGate permission="sale.create">` (or `use-permissions`) — never `role === 'admin'` string checks.
 
 ## Styling
@@ -43,4 +47,4 @@
 
 ## Review reject-list (fast fails)
 
-Raw hex colors · `any` · fetch in component · server data in Zustand · role string checks · unpaginated list render · float money math · "tenant/SaaS" words in `(dashboard)` UI · disabled-instead-of-hidden unpermitted nav.
+Raw hex colors · `any` · fetch in component · server data in Zustand · role string checks · unpaginated list render · native `window.confirm` or `window.alert` · missing `|| ''` input fallback causing controlled/uncontrolled warnings · float money math · "tenant/SaaS" words in `(dashboard)` UI · disabled-instead-of-hidden unpermitted nav.

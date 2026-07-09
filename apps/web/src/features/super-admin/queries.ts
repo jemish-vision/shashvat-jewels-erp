@@ -6,11 +6,11 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 }
 
 export async function listCompanies(params?: {
-  limit?: number; cursor?: string; search?: string; status?: string; sortBy?: string; sortDir?: string;
+  limit?: number; skip?: number; search?: string; status?: string; sortBy?: string; sortDir?: string;
 }): Promise<{ items: Company[]; pageInfo: PageInfo }> {
   const searchParams = new URLSearchParams();
   if (params?.limit) searchParams.set('limit', String(params.limit));
-  if (params?.cursor) searchParams.set('cursor', params.cursor);
+  if (params?.skip) searchParams.set('skip', String(params.skip));
   if (params?.search) searchParams.set('search', params.search);
   if (params?.status) searchParams.set('status', params.status);
   if (params?.sortBy) searchParams.set('sortBy', params.sortBy);
@@ -54,13 +54,18 @@ export async function deleteCompany(id: string): Promise<Company> {
 }
 
 export async function getAuditLog(params?: {
-  limit?: number; cursor?: string; targetType?: string; action?: string;
+  limit?: number; skip?: number; targetType?: string; action?: string; adminSearch?: string;
 }): Promise<{ items: AuditEntry[]; pageInfo: PageInfo }> {
   const searchParams = new URLSearchParams();
   if (params?.limit) searchParams.set('limit', String(params.limit));
-  if (params?.cursor) searchParams.set('cursor', params.cursor);
+  if (params?.skip) searchParams.set('skip', String(params.skip));
   if (params?.targetType) searchParams.set('targetType', params.targetType);
   if (params?.action) searchParams.set('action', params.action);
+  if (params?.adminSearch) searchParams.set('adminSearch', params.adminSearch);
   const qs = searchParams.toString();
   return apiFetch(`/api/super-admin/audit-log${qs ? `?${qs}` : ''}`);
+}
+
+export async function getAuditEntry(id: string): Promise<AuditEntry> {
+  return apiFetch<AuditEntry>(`/api/super-admin/audit-log/${id}`);
 }

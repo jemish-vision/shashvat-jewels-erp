@@ -92,7 +92,7 @@ export function SuperAdminSidebar() {
                     className={`group flex items-center gap-[11px] rounded-[10px] px-[10px] py-[9px] no-underline transition-all duration-150 ${
                       active
                         ? 'border-l-2 border-primary-light bg-[rgba(111,211,196,0.12)] shadow-[0_2px_6px_rgba(63,163,147,0.15)]'
-                        : 'border-l-2 border-transparent hover:translate-x-[2px] hover:bg-background'
+                        : 'border-l-2 border-transparent hover:bg-background'
                     }`}
                   >
                     <span

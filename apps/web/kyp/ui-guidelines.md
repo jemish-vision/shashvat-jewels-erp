@@ -44,20 +44,24 @@ White, radius 14, border `--border`, tinted shadow, hover lift. Stat card: icon 
 - Rows: border-top `--border`, cell padding ~13px 20px; primary identifier 13/700 dark, secondary text 12/500 muted; barcode/ids in 10.5px monospace muted.
 - Status/type as badges (see design-system status map).
 - Row actions via kebab menu: View, Edit, Sell, Memo, Reserve, Transfer, Generate Barcode, Print, History, Delete (danger, confirm dialog).
-- Toolbar above table: filter row (see below) + primary action right.
-- Footer: rows-per-page select (10/25/50) + "1–25 of 312" + pager. Maps to cursor pagination (`apps/api/kyp/pagination.md`).
+- Toolbar above table: filter row (`FilterCard` + `CustomSelect`) + primary action right.
+- Pagination & Footer: Always use `TablePagination` (`@/components/ui/table-pagination`) paired with `usePaginatedQuery` (`@/hooks/use-paginated-query`). Includes rows-per-page selector (10/25/50), item count summary ("1–25 of 312"), and page navigation buttons.
 
 ## Filters
 
-- Grid of labeled selects (label 9.5/700 muted above control), 5 core filters + **"More Filters"** toggle button showing an active-count pill (teal, 99px radius).
+- Grid of labeled selects using `FilterCard` (`@/components/ui/filter-card`) and `CustomSelect` (`@/components/ui/custom-select`) for uniform dropdown styling across all modules.
+- Labeled selects (label 9.5/700 muted above control), core filters + **"More Filters"** toggle button showing an active-count pill (teal, 99px radius).
 - Quick-view chips/tabs (e.g. Available / On Hold / Memo) are presets over the same query params.
 - Filter changes reset to page 1 (drop cursor). Persist filters in URL search params so views are shareable.
 
-## Forms
+## Forms & Confirmation Modals
 
+- Controlled input stability: Always provide fallback strings (`value={form.field || ''}`) on all input elements to prevent uncontrolled-to-controlled hydration warnings.
 - RHF + Zod (same schema shapes as backend). Field errors inline under the control (from `error.details` on 400).
 - Money/carat inputs: right-aligned, formatted on blur via `lib/money.ts` / `lib/carat.ts`.
-- Destructive/irreversible actions (delete, cancel document, approve): confirmation dialog stating the consequence.
+- **Destructive/Irreversible Actions & Modals (`useConfirm`)**: **Never use native browser popups (`window.confirm` or `window.alert`).** Always use `const { confirm } = useConfirm()` imported from `@/components/ui/confirm`.
+  - Supports themed modal variants: `confirm(msg, { title, variant: 'danger' | 'warning' | 'primary' | 'info', confirmText, cancelText })`.
+  - Includes backdrop blur, Esc key listener, and color-matched primary/danger/warning action buttons.
 - Submit buttons disable + spinner during mutation; keep forms mounted on error.
 
 ## Feedback & states

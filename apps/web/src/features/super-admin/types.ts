@@ -39,7 +39,8 @@ export interface AuditEntry {
 }
 
 export interface PageInfo {
-  nextCursor: string | null;
-  hasNextPage: boolean;
+  nextCursor?: string | null;
+  hasNextPage?: boolean;
   totalCount?: number;
+  totalPages?: number;
 }

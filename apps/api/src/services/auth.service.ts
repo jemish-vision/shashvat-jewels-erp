@@ -73,7 +73,7 @@ export function refresh(refreshToken: string) {
   }
 
   try {
-    const decoded = jwt.verify(refreshToken, JWT_SECRET) as { userId: string; type: string };
+    const decoded = jwt.verify(refreshToken, JWT_SECRET!) as unknown as { userId: string; type: string };
     const accessToken = signAccessToken({
       userId: decoded.userId,
       companyId: null,

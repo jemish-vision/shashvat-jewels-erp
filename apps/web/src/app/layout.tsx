@@ -3,6 +3,7 @@ import './globals.css';
 import { SessionProvider } from '@/components/layout/session-provider';
 import { QueryProvider } from '@/components/ui/query-provider';
 import { ToastProvider } from '@/components/ui/toast';
+import { ConfirmProvider } from '@/components/ui/confirm';
 
 export const metadata: Metadata = {
   title: 'Shashvat Jewels',
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SessionProvider>
           <QueryProvider>
-            <ToastProvider>{children}</ToastProvider>
+            <ConfirmProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </ConfirmProvider>
           </QueryProvider>
         </SessionProvider>
       </body>

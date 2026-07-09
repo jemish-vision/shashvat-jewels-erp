@@ -77,7 +77,7 @@ export function Topbar() {
 
           {/* Dropdown menu */}
           {dropdownOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-[180px] animate-[fadeUp_0.15s_ease-out] overflow-hidden rounded-xl border border-border bg-card shadow-[0_8px_24px_rgba(15,23,42,0.10),0_2px_6px_rgba(15,23,42,0.04)]">
+            <div className="absolute right-0 top-full z-[9999] mt-1.5 w-[180px] animate-[fadeUp_0.15s_ease-out] overflow-visible rounded-xl border border-border bg-card shadow-[0_8px_24px_rgba(15,23,42,0.10),0_2px_6px_rgba(15,23,42,0.04)]">
               {/* User info header */}
               <div className="border-b border-border px-3.5 py-3">
                 <div className="text-[13px] font-bold text-foreground">{user?.email || 'Admin'}</div>

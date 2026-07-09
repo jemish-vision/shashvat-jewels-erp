@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:fast": "node scripts/clean-next.js && next dev",
+    "dev:fast": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",

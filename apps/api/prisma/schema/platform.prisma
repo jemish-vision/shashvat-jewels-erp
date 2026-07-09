@@ -1,5 +1,5 @@
 model SuperAdmin {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String
   name         String
@@ -51,7 +51,7 @@ model Company {
 }
 
 model PlatformAuditLog {
-  id           String   @id @default(cuid())
+  id           String   @id @default(uuid())
   superAdminId String?
   superAdmin   SuperAdmin? @relation(fields: [superAdminId], references: [id])
   action       String
@@ -68,7 +68,7 @@ model PlatformAuditLog {
 }
 
 model PasswordResetToken {
-  id        String    @id @default(cuid())
+  id           String   @id @default(uuid())
   email     String
   token     String    @unique
   expiresAt DateTime
