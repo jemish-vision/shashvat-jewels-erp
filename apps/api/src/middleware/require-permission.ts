@@ -14,3 +14,16 @@ export function requirePermission(...permissions: string[]) {
     next();
   };
 }
+
+export function enforceBranchScope(
+  session: { branchId?: string | null },
+  requestedBranchId?: string | null
+): string | undefined {
+  if (!session || session.branchId === null || session.branchId === undefined) {
+    return requestedBranchId ?? undefined;
+  }
+  if (requestedBranchId && requestedBranchId !== session.branchId) {
+    throw new PermissionError('Branch scope violation: cannot access data of another branch');
+  }
+  return session.branchId;
+}

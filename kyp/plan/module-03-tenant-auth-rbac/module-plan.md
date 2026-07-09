@@ -1,6 +1,6 @@
 # Module 03 — Company Onboarding, Tenant Auth & RBAC
 
-Status: planned
+Status: in-progress
 Depends on: Module 02 (Super Admin Platform Portal)
 Master: [../master-plan.md](../master-plan.md)
 
@@ -134,16 +134,16 @@ E2E (Playwright):
 
 ## Deliverables checklist
 
-- [ ] Permission catalog seeded globally; both system roles carry correct matrices
-- [ ] Onboarding is one transaction: currency + HQ + roles + CoA + admin (`branchId: null`); backfill run for existing companies
-- [ ] Refresh-token escalation bug fixed and regression-tested
-- [ ] `COMPANY_SUSPENDED` enforced at login **and** mid-session
-- [ ] Tenant Prisma extension rewritten (singleton-based, create-inject, full operation coverage) and used by the probe route
-- [ ] Global-unique tenant email migration + cross-table (super_admins) guard
-- [ ] Forgot/reset password works for tenant users
-- [ ] §17.3 routing in `middleware.ts`; tenant shell v1 with permission-filtered sidebar
-- [ ] Tenant-isolation + RBAC harness established (factories, two-company fixture) for all future modules
-- [ ] ADRs recorded: permission string format (colon), tenant email global uniqueness, suspension-cache enforcement, refresh re-resolution, `/dashboard` route split
+- [x] Permission catalog seeded globally; both system roles carry correct matrices
+- [x] Onboarding is one transaction: currency + HQ + roles + CoA + admin (`branchId: null`); backfill run for existing companies
+- [x] Refresh-token escalation bug fixed and regression-tested
+- [x] `COMPANY_SUSPENDED` enforced at login **and** mid-session
+- [x] Tenant Prisma extension rewritten (singleton-based, create-inject, full operation coverage) and used by the probe route
+- [x] Global-unique tenant email migration + cross-table (super_admins) guard
+- [x] Forgot/reset password works for tenant users
+- [x] §17.3 routing in `middleware.ts`; tenant shell v1 with permission-filtered sidebar
+- [x] Tenant-isolation + RBAC harness established (factories, two-company fixture) for all future modules
+- [x] ADRs recorded: permission string format (colon), tenant email global uniqueness, suspension-cache enforcement, refresh re-resolution, `/dashboard` route split
 
 ## Risks / notes
 

@@ -36,7 +36,7 @@ export const updateCompanySchema = z.object({
   baseCurrency: z.string().optional(),
   taxId: z.string().optional(),
   plan: z.string().optional(),
-});
+}).strict();
 
 export type CompanyListQuery = z.infer<typeof companyListQuery>;
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;

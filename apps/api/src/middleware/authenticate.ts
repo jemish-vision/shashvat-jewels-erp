@@ -7,6 +7,8 @@ declare global {
   namespace Express {
     interface Request {
       session?: SessionPayload;
+      companyId?: string;
+      branchId?: string | null;
     }
   }
 }

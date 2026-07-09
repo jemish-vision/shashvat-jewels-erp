@@ -1,25 +1,72 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './prisma.js';
+
+const SKIP_MODELS = ['SuperAdmin', 'Company', 'PlatformAuditLog', 'PasswordResetToken', 'Permission'];
 
 export function createTenantExtension(companyId: string) {
-  return new PrismaClient().$extends({
+  return prisma.$extends({
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
-          const skipModels = ['SuperAdmin', 'Company', 'PlatformAuditLog'];
-          if (skipModels.includes(model)) {
+          if (!model || SKIP_MODELS.includes(model)) {
             return query(args);
           }
-          if (operation === 'create' || operation === 'createMany') {
-            return query(args);
+
+          const typedArgs = (args || {}) as any;
+
+          if (operation === 'create') {
+            typedArgs.data = {
+              ...typedArgs.data,
+              companyId: typedArgs.data?.companyId ?? companyId,
+            };
+          } else if (operation === 'createMany') {
+            if (Array.isArray(typedArgs.data)) {
+              typedArgs.data = typedArgs.data.map((item: any) => ({
+                ...item,
+                companyId: item.companyId ?? companyId,
+              }));
+            } else if (typedArgs.data) {
+              typedArgs.data = {
+                ...typedArgs.data,
+                companyId: typedArgs.data.companyId ?? companyId,
+              };
+            }
+          } else if (operation === 'upsert') {
+            typedArgs.where = { ...typedArgs.where, companyId };
+            typedArgs.create = { ...typedArgs.create, companyId: typedArgs.create?.companyId ?? companyId };
+          } else if (
+            [
+              'findUnique',
+              'findFirst',
+              'findMany',
+              'update',
+              'updateMany',
+              'delete',
+              'deleteMany',
+              'count',
+              'aggregate',
+              'groupBy',
+            ].includes(operation)
+          ) {
+            typedArgs.where = {
+              ...(typedArgs.where || {}),
+              companyId,
+            };
           }
-          if (operation === 'findUnique' || operation === 'findFirst' || operation === 'findMany') {
-            const where = (args as any).where ?? {};
-            where.companyId = companyId;
-            args.where = where;
-          }
-          return query(args);
+
+          return query(typedArgs);
         },
       },
     },
   });
+}
+
+const tenantClientCache = new Map<string, ReturnType<typeof createTenantExtension>>();
+
+export function getTenantClient(companyId: string) {
+  let client = tenantClientCache.get(companyId);
+  if (!client) {
+    client = createTenantExtension(companyId);
+    tenantClientCache.set(companyId, client);
+  }
+  return client;
 }

@@ -13,6 +13,10 @@ export interface AuthUser {
   permissions: string[];
   name?: string;
   email?: string;
+  companyName?: string;
+  companyLogoUrl?: string | null;
+  branchName?: string;
+  branchCode?: string;
 }
 
 interface AuthContextValue {
@@ -60,9 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Fetch user info
         const me = await apiFetch<MeResponse>('/api/auth/me');
         setUser(me);
+        setCookie('user-role', me.role, 7 * 24 * 60 * 60);
       } catch {
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         clearCookie('auth-token');
+        clearCookie('user-role');
         setAccessToken(null);
       } finally {
         setIsLoading(false);
@@ -79,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(data.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
     setCookie('auth-token', '1', 7 * 24 * 60 * 60);
+    setCookie('user-role', data.session.role, 7 * 24 * 60 * 60);
 
     const authUser: AuthUser = {
       userId: data.session.userId,
@@ -86,7 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       branchId: data.session.branchId,
       role: data.session.role,
       permissions: data.session.permissions,
-      email,
+      name: data.session.name,
+      email: data.session.email || email,
+      companyName: data.session.companyName,
+      companyLogoUrl: data.session.companyLogoUrl,
+      branchName: data.session.branchName,
+      branchCode: data.session.branchCode,
     };
     setUser(authUser);
     return authUser;
@@ -107,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(null);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     clearCookie('auth-token');
+    clearCookie('user-role');
     setUser(null);
   }, []);
 

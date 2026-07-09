@@ -53,3 +53,9 @@ export class DuplicateEntityError extends AppError {
     super(409, ErrorCodes.DUPLICATE_ENTITY, message);
   }
 }
+
+export class CompanySuspendedError extends AppError {
+  constructor(message = 'Company account is suspended or unavailable') {
+    super(403, 'COMPANY_SUSPENDED', message);
+  }
+}

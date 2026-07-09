@@ -4,6 +4,9 @@ import { errorHandler } from './middleware/error-handler.js';
 import authRoutes from './routes/auth.routes.js';
 import companyRoutes from './routes/super-admin/companies.routes.js';
 import platformRoutes from './routes/super-admin/platform.routes.js';
+import tenantRoutes from './routes/tenant.routes.js';
+import { authenticate } from './middleware/authenticate.js';
+import { tenantScope } from './middleware/tenant-scope.js';
 
 const app: Express = express();
 
@@ -17,6 +20,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/super-admin/companies', companyRoutes);
 app.use('/api/super-admin', platformRoutes);
+app.use('/api/tenant', authenticate, tenantScope, tenantRoutes);
 
 app.use(errorHandler);
 

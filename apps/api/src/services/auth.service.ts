@@ -64,6 +64,7 @@ export async function login(rawEmail: string, password: string) {
     where: { email },
     include: {
       company: true,
+      branch: true,
       role: { include: { permissions: { include: { permission: true } } } },
     },
   });
@@ -77,7 +78,11 @@ export async function login(rawEmail: string, password: string) {
     return { success: false as const, code: 'INVALID_CREDENTIALS' as const };
   }
 
-  if (!tenantUser.isActive || tenantUser.company.deletedAt || tenantUser.company.status === 'SUSPENDED') {
+  if (tenantUser.company.deletedAt || tenantUser.company.status === 'SUSPENDED') {
+    return { success: false as const, code: 'COMPANY_SUSPENDED' as const };
+  }
+
+  if (!tenantUser.isActive) {
     return { success: false as const, code: 'ACCOUNT_DISABLED' as const };
   }
 
@@ -85,7 +90,7 @@ export async function login(rawEmail: string, password: string) {
     (rp) => `${rp.permission.resource}:${rp.permission.action}`
   );
 
-  const session: SessionPayload & { name: string; email: string } = {
+  const session = {
     userId: tenantUser.id,
     companyId: tenantUser.companyId,
     branchId: tenantUser.branchId,
@@ -93,9 +98,19 @@ export async function login(rawEmail: string, password: string) {
     permissions,
     name: tenantUser.name,
     email: tenantUser.email,
+    companyName: tenantUser.company.name,
+    companyLogoUrl: tenantUser.company.logoUrl,
+    branchName: tenantUser.branch?.name ?? 'All Branches (HQ)',
+    branchCode: tenantUser.branch?.code ?? 'ALL',
   };
 
-  const accessToken = signAccessToken(session);
+  const accessToken = signAccessToken({
+    userId: tenantUser.id,
+    companyId: tenantUser.companyId,
+    branchId: tenantUser.branchId,
+    role: tenantUser.role.name,
+    permissions,
+  });
   const refreshToken = signRefreshToken(tenantUser.id);
 
   await prisma.user.update({
@@ -159,6 +174,7 @@ export async function getSession(userId: string) {
     where: { id: userId },
     include: {
       company: true,
+      branch: true,
       role: { include: { permissions: { include: { permission: true } } } },
     },
   });
@@ -180,52 +196,50 @@ export async function getSession(userId: string) {
     name: tenantUser.name,
     email: tenantUser.email,
     lastLoginAt: tenantUser.lastLoginAt,
+    companyName: tenantUser.company.name,
+    companyLogoUrl: tenantUser.company.logoUrl,
+    branchName: tenantUser.branch?.name ?? 'All Branches (HQ)',
+    branchCode: tenantUser.branch?.code ?? 'ALL',
   };
 }
 
 export async function forgotPassword(email: string) {
-  // Look up user in super_admins first, then tenant users (for Module 03)
-  const superAdmin = await prisma.superAdmin.findUnique({ where: { email } });
-  if (!superAdmin) {
-    // Return success even if email not found (security: don't reveal which emails exist)
+  const normalizedEmail = email.toLowerCase();
+  const superAdmin = await prisma.superAdmin.findUnique({ where: { email: normalizedEmail } });
+  const tenantUser = !superAdmin ? await prisma.user.findUnique({ where: { email: normalizedEmail } }) : null;
+
+  if (!superAdmin && !tenantUser) {
     return { success: true as const, message: 'If this email is registered, you will receive a password reset link.' };
   }
 
-  // Generate a secure random token
+  const targetEmail = superAdmin ? superAdmin.email : tenantUser!.email;
   const resetToken = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-  // Store the token in the database
   await prisma.passwordResetToken.create({
     data: {
-      email: superAdmin.email,
+      email: targetEmail,
       token: resetToken,
       expiresAt,
     },
   });
 
-  // Build reset URL
   const baseUrl = process.env.APP_URL || 'http://localhost:3000';
   const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
-  // In development: log the reset URL
   console.log('─────────────────────────────────────────────');
   console.log('  PASSWORD RESET LINK (dev mode):');
   console.log(`  ${resetUrl}`);
   console.log('─────────────────────────────────────────────');
 
-  // TODO: Send email via SMTP/Resend/etc. when email service is configured
-  // For now, return the reset URL so frontend can test
   return {
     success: true as const,
     message: 'If this email is registered, you will receive a password reset link.',
-    // Only include resetUrl in development
     ...(process.env.NODE_ENV !== 'production' && { resetUrl }),
   };
 }
 
 export async function resetPassword(token: string, newPassword: string) {
-  // Find valid token
   const resetTokenRecord = await prisma.passwordResetToken.findUnique({ where: { token } });
   if (!resetTokenRecord) {
     return { success: false as const, code: 'INVALID_TOKEN' as const, message: 'Invalid or expired reset token.' };
@@ -239,23 +253,31 @@ export async function resetPassword(token: string, newPassword: string) {
     return { success: false as const, code: 'TOKEN_EXPIRED' as const, message: 'This reset link has expired.' };
   }
 
-  // Hash new password and update
   const hashedPassword = await bcrypt.hash(newPassword, 12);
   const superAdmin = await prisma.superAdmin.findUnique({ where: { email: resetTokenRecord.email } });
-  if (!superAdmin) {
+  const tenantUser = !superAdmin ? await prisma.user.findUnique({ where: { email: resetTokenRecord.email } }) : null;
+
+  if (!superAdmin && !tenantUser) {
     return { success: false as const, code: 'USER_NOT_FOUND' as const, message: 'User not found.' };
   }
 
-  await prisma.$transaction([
-    prisma.superAdmin.update({
-      where: { id: superAdmin.id },
-      data: { passwordHash: hashedPassword },
-    }),
-    prisma.passwordResetToken.update({
+  await prisma.$transaction(async (tx) => {
+    if (superAdmin) {
+      await tx.superAdmin.update({
+        where: { id: superAdmin.id },
+        data: { passwordHash: hashedPassword },
+      });
+    } else if (tenantUser) {
+      await tx.user.update({
+        where: { id: tenantUser.id },
+        data: { passwordHash: hashedPassword },
+      });
+    }
+    await tx.passwordResetToken.update({
       where: { id: resetTokenRecord.id },
       data: { usedAt: new Date() },
-    }),
-  ]);
+    });
+  });
 
   return { success: true as const, message: 'Password has been reset successfully.' };
 }

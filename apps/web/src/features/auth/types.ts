@@ -7,6 +7,12 @@ export interface LoginResponse {
     branchId: string | null;
     role: string;
     permissions: string[];
+    name?: string;
+    email?: string;
+    companyName?: string;
+    companyLogoUrl?: string | null;
+    branchName?: string;
+    branchCode?: string;
   };
 }
 
@@ -19,4 +25,8 @@ export interface MeResponse {
   name: string;
   email: string;
   lastLoginAt: string | null;
+  companyName?: string;
+  companyLogoUrl?: string | null;
+  branchName?: string;
+  branchCode?: string;
 }

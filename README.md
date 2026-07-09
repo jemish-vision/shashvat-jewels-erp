@@ -36,6 +36,18 @@ Shashvat Jewels is a state-of-the-art, multi-tenant enterprise resource planning
   - Tracks actions across Super Admin and Tenant activities (`LOGIN`, `CREATE_COMPANY`, `UPDATE_COMPANY`, `SUSPEND_COMPANY`, etc.).
   - Detailed Audit Log inspector (`/audit-log/[id]`) displaying before/after JSON diffs.
 
+### 4. Tenant Authentication, RBAC & Tenant Shell (`Module 03`)
+- **Mid-Session Scope Enforcement**:
+  - Tenant sessions carry automatic cache-backed suspension checks (`COMPANY_SUSPENDED`), immediately blocking access within ≤60 seconds if a company account is suspended or cancelled.
+- **Robust Multi-Tenant Data Isolation**:
+  - Extended Prisma client (`db/tenant-extension.ts`) automatically injects `companyId` into all writes and enforces `where.companyId` on all database reads and updates.
+- **Dynamic RBAC & Permission Catalog**:
+  - Granular permission strings (`resource:action`, e.g., `sale:view`, `certified-diamond:view`) seeded globally and assigned to system and branch roles.
+- **Tenant Shell v1 (`/dashboard`)**:
+  - **Tenant Brand Illusion**: Displays tenant logo and company name in topbar and sidebar with zero platform administrative terminology.
+  - **Permission-Filtered Sidebar**: Navigation menu items (`tenantNav`) are dynamically filtered based on logged-in user permissions.
+  - **Branch Switcher Chip**: Indicates company-wide (`HQ`) vs. branch-scoped environment.
+
 ## Local Development Setup
 
 1. **Install Dependencies**:

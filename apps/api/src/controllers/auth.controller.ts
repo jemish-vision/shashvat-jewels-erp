@@ -33,15 +33,29 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     }
 
     const isSuperAdmin = result.session.role === 'SUPER_ADMIN';
-    await prisma.platformAuditLog.create({
-      data: {
-        superAdminId: isSuperAdmin ? result.session.userId : null,
-        action: 'LOGIN',
-        targetType: isSuperAdmin ? 'SuperAdmin' : 'User',
-        targetId: result.session.userId,
-        ipAddress,
-      },
-    });
+    if (isSuperAdmin) {
+      await prisma.platformAuditLog.create({
+        data: {
+          superAdminId: result.session.userId,
+          action: 'LOGIN',
+          targetType: 'SuperAdmin',
+          targetId: result.session.userId,
+          ipAddress,
+        },
+      });
+    } else if (result.session.companyId) {
+      await prisma.auditLog.create({
+        data: {
+          companyId: result.session.companyId,
+          branchId: result.session.branchId ?? null,
+          userId: result.session.userId,
+          action: 'LOGIN',
+          entityType: 'User',
+          entityId: result.session.userId,
+          ipAddress,
+        },
+      });
+    }
 
     res.json({
       success: true,
@@ -86,15 +100,29 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
     }
 
     if (req.session) {
-      await prisma.platformAuditLog.create({
-        data: {
-          superAdminId: req.session.userId,
-          action: 'LOGOUT',
-          targetType: 'SuperAdmin',
-          targetId: req.session.userId,
-          ipAddress: req.ip || 'unknown',
-        },
-      });
+      if (req.session.role === 'SUPER_ADMIN') {
+        await prisma.platformAuditLog.create({
+          data: {
+            superAdminId: req.session.userId,
+            action: 'LOGOUT',
+            targetType: 'SuperAdmin',
+            targetId: req.session.userId,
+            ipAddress: req.ip || 'unknown',
+          },
+        });
+      } else if (req.session.companyId) {
+        await prisma.auditLog.create({
+          data: {
+            companyId: req.session.companyId,
+            branchId: req.session.branchId ?? null,
+            userId: req.session.userId,
+            action: 'LOGOUT',
+            entityType: 'User',
+            entityId: req.session.userId,
+            ipAddress: req.ip || 'unknown',
+          },
+        });
+      }
     }
 
     res.json({ success: true, data: null });

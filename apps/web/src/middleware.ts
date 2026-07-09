@@ -13,6 +13,21 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
+  const userRole = request.cookies.get('user-role')?.value;
+  if (userRole === 'SUPER_ADMIN' && pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  const isPlatformPath =
+    pathname === '/' ||
+    pathname.startsWith('/super-admin') ||
+    pathname.startsWith('/companies') ||
+    pathname.startsWith('/audit-log');
+
+  if (userRole && userRole !== 'SUPER_ADMIN' && isPlatformPath) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
   return NextResponse.next();
 }
 

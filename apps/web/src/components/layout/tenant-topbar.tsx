@@ -1,17 +1,24 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { MdLocationOn, MdNotifications, MdPerson, MdLogout, MdUnfoldMore, MdChevronRight } from 'react-icons/md';
+import { BranchSwitcher } from './branch-switcher';
+import {
+  MdNotifications,
+  MdPerson,
+  MdLogout,
+  MdUnfoldMore,
+  MdChevronRight,
+} from 'react-icons/md';
 
-export function Topbar() {
+export function TenantTopbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -30,32 +37,39 @@ export function Topbar() {
     router.push('/login');
   }
 
+  // Format breadcrumb section title from pathname
+  const segments = pathname.split('/').filter(Boolean);
+  const currentSection =
+    segments.length > 1
+      ? segments[1]
+          .split('-')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      : 'Overview';
+
   return (
     <header
-      className="fixed right-0 top-0 z-40 flex h-[var(--header-h)] items-center justify-between border-b border-border bg-white/85 px-6 backdrop-blur"
-      style={{ left: 'var(--sidebar-w)' }}
+      className="fixed right-0 top-0 z-40 flex h-[var(--header-h,64px)] items-center justify-between border-b border-border bg-white/85 px-6 backdrop-blur dark:bg-card/85"
+      style={{ left: 'var(--sidebar-w,272px)' }}
     >
-      {/* Breadcrumb */}
+      {/* Breadcrumb / Title */}
       <div className="flex items-center gap-2">
-        <span className="text-[13px] font-medium text-text-secondary">Platform</span>
+        <span className="text-[13px] font-medium text-text-secondary">
+          {user?.companyName || 'Workspace'}
+        </span>
         <MdChevronRight size={14} className="text-text-muted" />
-        <span className="text-[13px] font-bold text-foreground">Overview</span>
+        <span className="text-[13px] font-bold text-foreground">{currentSection}</span>
       </div>
 
       {/* Right side actions */}
-      <div className="flex items-center gap-[18px]">
-        {/* Branch selector */}
-        <div className="flex items-center gap-[14px] border-r border-border pr-[18px]">
-          <button className="flex items-center gap-[5px] border-none bg-none text-[12px] font-semibold text-text-secondary transition-colors duration-150 hover:text-primary">
-            <MdLocationOn size={16} />
-            Platform
-          </button>
-        </div>
+      <div className="flex items-center gap-4">
+        {/* Branch Switcher Chip */}
+        <BranchSwitcher />
 
         {/* Notification bell */}
-        <button className="relative flex rounded-lg p-[6px] text-text-secondary transition-colors duration-150 hover:bg-background">
+        <button className="relative flex rounded-lg p-2 text-text-secondary transition-colors duration-150 hover:bg-background">
           <MdNotifications size={20} />
-          <span className="absolute right-[6px] top-[6px] h-[7px] w-[7px] rounded-full border-[1.5px] border-white bg-danger" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border border-white bg-primary dark:border-card" />
         </button>
 
         {/* User avatar dropdown */}
@@ -65,7 +79,7 @@ export function Topbar() {
             className="flex items-center gap-2.5 rounded-xl p-1.5 transition-colors duration-150 hover:bg-background"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-light to-primary text-xs font-bold text-white shadow-sm">
-              {(user?.name?.[0] || user?.email?.[0] || 'S').toUpperCase()}
+              {(user?.name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
             </div>
             <div className="text-left pr-1">
               <div className="text-xs font-bold text-foreground leading-tight">
@@ -75,10 +89,16 @@ export function Topbar() {
                         .split('@')[0]
                         .replace(/[._-]/g, ' ')
                         .replace(/\b\w/g, (c) => c.toUpperCase())
-                    : 'Super Admin')}
+                    : 'Company Admin')}
               </div>
               <div className="text-[10px] font-semibold text-text-secondary leading-tight">
-                Super Admin
+                {user?.role === 'SUPER_ADMIN' || user?.role === 'SUPERADMIN'
+                  ? 'Super Admin'
+                  : user?.role === 'TENANT_ADMIN' || user?.role === 'COMPANY_ADMIN'
+                    ? 'Headquarters Admin'
+                    : user?.role
+                      ? user.role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                      : 'Headquarters Admin'}
               </div>
             </div>
             <MdUnfoldMore
@@ -101,9 +121,17 @@ export function Topbar() {
                           .split('@')[0]
                           .replace(/[._-]/g, ' ')
                           .replace(/\b\w/g, (c) => c.toUpperCase())
-                      : 'Super Admin')}
+                      : 'Company Admin')}
                 </div>
-                <div className="text-[11px] font-medium text-text-muted">Super Admin</div>
+                <div className="text-[11px] font-medium text-text-muted">
+                  {user?.role === 'SUPER_ADMIN' || user?.role === 'SUPERADMIN'
+                    ? 'Super Admin'
+                    : user?.role === 'TENANT_ADMIN' || user?.role === 'COMPANY_ADMIN'
+                      ? 'Headquarters Admin'
+                      : user?.role
+                        ? user.role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                        : 'Headquarters Admin'}
+                </div>
               </div>
 
               {/* Menu items */}

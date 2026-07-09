@@ -2,7 +2,7 @@ model User {
   id           String   @id @default(cuid())
   companyId    String
   company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  email        String
+  email        String   @unique
   passwordHash String
   name         String
   phone        String?

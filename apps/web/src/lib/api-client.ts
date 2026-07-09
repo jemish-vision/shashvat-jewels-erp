@@ -69,6 +69,13 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   const body = (await res.json()) as ApiResult<T>;
 
   if (!body.success) {
+    if (body.error.code === 'COMPANY_SUSPENDED' && typeof window !== 'undefined') {
+      localStorage.removeItem('shashvat_refresh_token');
+      document.cookie = 'auth-token=; path=/; max-age=0; SameSite=Lax';
+      document.cookie = 'user-role=; path=/; max-age=0; SameSite=Lax';
+      setAccessToken(null);
+      window.location.href = '/login?error=COMPANY_SUSPENDED';
+    }
     throw new ApiError(body.error.code, body.error.message, body.error.details);
   }
 
