@@ -12,41 +12,40 @@ import {
   MdArrowForward,
   MdHistory,
   MdPerson,
-  MdMoreHoriz,
+  MdSecurity,
 } from 'react-icons/md';
 
-const statusMeta: Record<string, { label: string; icon: React.ReactNode; bg: string; color: string; badgeBg: string; badgeColor: string }> = {
+const statusMeta: Record<
+  string,
+  { label: string; icon: React.ReactNode; badgeClass: string; dotClass: string; barColor: string }
+> = {
   ACTIVE: {
     label: 'Active',
-    icon: <MdCheckCircle size={17} />,
-    bg: 'bg-success-bg',
-    color: 'text-success',
-    badgeBg: 'bg-success-bg',
-    badgeColor: 'text-success',
+    icon: <MdCheckCircle className="h-4 w-4" />,
+    badgeClass: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20',
+    dotClass: 'bg-emerald-500',
+    barColor: 'bg-emerald-500',
   },
   TRIAL: {
     label: 'Trial',
-    icon: <MdHourglassEmpty size={17} />,
-    bg: 'bg-info-bg',
-    color: 'text-info',
-    badgeBg: 'bg-info-bg',
-    badgeColor: 'text-info',
+    icon: <MdHourglassEmpty className="h-4 w-4" />,
+    badgeClass: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20',
+    dotClass: 'bg-blue-500',
+    barColor: 'bg-blue-500',
   },
   SUSPENDED: {
     label: 'Suspended',
-    icon: <MdBlock size={17} />,
-    bg: 'bg-warning-bg',
-    color: 'text-warning',
-    badgeBg: 'bg-warning-bg',
-    badgeColor: 'text-warning',
+    icon: <MdBlock className="h-4 w-4" />,
+    badgeClass: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20',
+    dotClass: 'bg-amber-500',
+    barColor: 'bg-amber-500',
   },
   CANCELLED: {
     label: 'Cancelled',
-    icon: <MdCancel size={17} />,
-    bg: 'bg-neutral-bg',
-    color: 'text-neutral',
-    badgeBg: 'bg-neutral-bg',
-    badgeColor: 'text-neutral',
+    icon: <MdCancel className="h-4 w-4" />,
+    badgeClass: 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-400 border border-neutral-500/20',
+    dotClass: 'bg-neutral-400',
+    barColor: 'bg-neutral-400',
   },
 };
 
@@ -58,197 +57,297 @@ export default function SuperAdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-[13px] font-medium text-text-secondary">Loading dashboard&hellip;</div>
+      <div className="flex min-h-[420px] flex-col items-center justify-center gap-3">
+        <div className="h-9 w-9 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+        <div className="text-sm font-semibold text-text-secondary">Loading Platform Intelligence&hellip;</div>
       </div>
     );
   }
 
   if (error || !stats) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="card p-6 text-center">
-          <div className="mb-2 text-[14px] font-semibold text-danger">Failed to load dashboard</div>
-          <div className="text-[12px] text-text-muted">Please try refreshing the page.</div>
+      <div className="flex min-h-[420px] items-center justify-center p-6">
+        <div className="flex max-w-md flex-col items-center rounded-2xl border border-danger/20 bg-card p-8 text-center shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-danger/10 text-danger">
+            <MdCancel className="h-6 w-6" />
+          </div>
+          <h3 className="mt-4 text-base font-extrabold text-foreground">Failed to Load Dashboard Data</h3>
+          <p className="mt-1.5 text-xs leading-relaxed text-text-secondary">
+            Could not retrieve administration metrics from the server. Please verify your connection or try again.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:brightness-110"
+          >
+            Retry Loading
+          </button>
         </div>
       </div>
     );
   }
 
-  const statusEntries = Object.entries(stats.byStatus);
-  const primaryStat = { label: 'Total Companies', value: stats.total, icon: <MdBusiness size={17} />, bg: 'bg-[rgba(111,211,196,0.14)]', color: 'text-primary' };
+  const activeCount = (stats.byStatus.ACTIVE as number) || 0;
+  const trialCount = (stats.byStatus.TRIAL as number) || 0;
+  const suspendedCount = (stats.byStatus.SUSPENDED as number) || 0;
+  const cancelledCount = (stats.byStatus.CANCELLED as number) || 0;
+  const totalCompanies = stats.total || 1;
+
+  const activePct = Math.round((activeCount / totalCompanies) * 100);
 
   return (
-    <div className="flex flex-col gap-6">
-
-      {/* Page Header */}
+    <div className="flex flex-col gap-8 pb-12">
+      {/* Key Metrics Showcase Grid */}
       <div>
-        <h1 className="m-0 text-[22px] font-extrabold tracking-tight text-foreground">Platform Dashboard</h1>
-        <p className="m-0 mt-[5px] text-[13px] font-medium text-text-secondary">
-          Live snapshot of companies, registrations, and platform activity.
-        </p>
-      </div>
-
-      {/* Key Metrics */}
-      <div>
-        <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.1em] text-text-secondary">Key Metrics</h4>
-        <div className="grid grid-cols-4 gap-4">
-          {/* Total stat card — primary */}
-          <div className="card p-4">
-            <div className="mb-3.5 flex items-center justify-between">
-              <div className="flex items-center gap-[9px]">
-                <div className={`flex h-8 w-8 flex-none items-center justify-center rounded-[9px] ${primaryStat.bg} ${primaryStat.color}`}>
-                  {primaryStat.icon}
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-text-secondary">
-                  {primaryStat.label}
-                </span>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-text-muted">
+            Global Ecosystem Metrics
+          </h2>
+          <span className="text-[11px] font-semibold text-text-secondary">Live Telemetry Sync</span>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/* Total Tenants */}
+          <div className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                Total Companies
+              </span>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
+                <MdBusiness className="h-5 w-5" />
               </div>
             </div>
-            <div className="flex items-baseline gap-[7px]">
-              <span className="text-[21px] font-extrabold tracking-tight text-foreground">
-                {primaryStat.value}
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-black tracking-tight text-foreground">{stats.total}</span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">+100% Active</span>
+            </div>
+          </div>
+
+          {/* Active Companies */}
+          <div className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all hover:border-emerald-500/40 hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                Active Companies
+              </span>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 transition-transform group-hover:scale-110 dark:text-emerald-400">
+                <MdCheckCircle className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-black tracking-tight text-foreground">{activeCount}</span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{activePct}%</span>
+            </div>
+          </div>
+
+          {/* Suspended / Inactive Tenants */}
+          <div className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all hover:border-amber-500/40 hover:shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                Restricted / Hold
+              </span>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-transform group-hover:scale-110 dark:text-amber-400">
+                <MdBlock className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-3xl font-black tracking-tight text-foreground">{suspendedCount + cancelledCount}</span>
+              <span className="text-xs font-bold text-text-secondary">
+                {suspendedCount} suspended, {cancelledCount} cancelled
               </span>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Status stat cards */}
-          {statusEntries.map(([status, count]) => {
-            const meta = statusMeta[status] || { label: status, icon: <MdMoreHoriz size={17} />, bg: 'bg-muted', color: 'text-text-secondary', badgeBg: 'bg-neutral-bg', badgeColor: 'text-neutral' };
-            return (
-              <div key={status} className="card p-4">
-                <div className="mb-3.5 flex items-center justify-between">
-                  <div className="flex items-center gap-[9px]">
-                    <div className={`flex h-8 w-8 flex-none items-center justify-center rounded-[9px] ${meta.bg} ${meta.color}`}>
-                      {meta.icon}
-                    </div>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.06em] text-text-secondary">
-                      {meta.label}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-[7px]">
-                  <span className="text-[21px] font-extrabold tracking-tight text-foreground">
-                    {count as number}
-                  </span>
-                </div>
+      {/* Split Directory & Audit Logs */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* Left Column: Recent Companies Directory (7 cols) */}
+        <div className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-6 shadow-sm lg:col-span-7">
+          <div>
+            <div className="mb-5 flex items-center justify-between border-b border-border pb-4">
+              <div>
+                <h3 className="text-base font-extrabold text-foreground">Recent Enterprise Tenants</h3>
+                <p className="text-xs font-medium text-text-secondary">
+                  Latest {stats.recentCompanies.length} companies registered on the platform
+                </p>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Recent companies + activity */}
-      <div className="grid grid-cols-12 gap-4">
-
-        {/* Recent Companies */}
-        <div className="col-span-7 card-lg p-[22px]">
-          <div className="mb-[14px] flex items-center justify-between">
-            <div>
-              <h3 className="m-0 text-[16px] font-bold text-foreground">Recent Companies</h3>
-              <p className="m-0 mt-[3px] text-[11px] font-medium text-text-secondary">
-                Latest {stats.recentCompanies.length} registered companies
-              </p>
+              <Link
+                href="/companies"
+                className="inline-flex items-center gap-1 text-xs font-bold text-primary transition-colors hover:text-primary-dark"
+              >
+                Directory
+                <MdArrowForward className="h-4 w-4" />
+              </Link>
             </div>
-            <Link
-              href="/companies"
-              className="text-[11px] font-bold text-primary no-underline transition-colors hover:text-primary-dark"
-            >
-              View All
-            </Link>
+
+            {stats.recentCompanies.length === 0 ? (
+              <div className="py-12 text-center">
+                <MdBusiness className="mx-auto h-10 w-10 text-text-muted opacity-40" />
+                <p className="mt-2 text-xs font-bold text-foreground">No Companies Registered Yet</p>
+                <p className="text-[11px] text-text-secondary">Click Provision Tenant Company above to get started</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border/60">
+                {stats.recentCompanies.map(
+                  (c: {
+                    id: string;
+                    name: string;
+                    status: string;
+                    slug?: string | null;
+                    city?: string | null;
+                    country?: string | null;
+                    baseCurrency?: string | null;
+                    createdAt?: string | Date | null;
+                    _count?: { users: number; branches: number };
+                  }) => {
+                    const meta = statusMeta[c.status] || {
+                      label: c.status,
+                      badgeClass: 'bg-muted text-text-secondary',
+                    };
+                    return (
+                      <Link
+                        key={c.id}
+                        href={`/companies/${c.id}`}
+                        className="group flex flex-col justify-between gap-3 py-3.5 transition-colors hover:bg-background/80 sm:flex-row sm:items-center"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-primary-light/20 to-primary/10 text-sm font-black text-primary">
+                            {c.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-sm font-bold text-foreground group-hover:text-primary">{c.name}</p>
+                              {c.slug && (
+                                <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-text-secondary">
+                                  @{c.slug}
+                                </span>
+                              )}
+                              {c.baseCurrency && (
+                                <span className="rounded border border-border px-1.5 py-0.5 text-[10px] font-bold uppercase text-text-muted">
+                                  {c.baseCurrency}
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-1 flex flex-wrap items-center gap-2.5 text-[11px] text-text-secondary">
+                              <span>
+                                {c.city ? `${c.city}, ${c.country || 'India'}` : c.country || 'India'}
+                              </span>
+                              <span>•</span>
+                              <span className="font-semibold text-foreground">
+                                {c._count?.branches ?? 1} Branches
+                              </span>
+                              <span>•</span>
+                              <span className="font-semibold text-foreground">
+                                {c._count?.users ?? 1} Users
+                              </span>
+                              {c.createdAt && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-text-muted">
+                                    Joined {new Date(c.createdAt).toLocaleDateString()}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 self-end sm:self-center">
+                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${meta.badgeClass}`}>
+                            {meta.label || c.status}
+                          </span>
+                          <MdArrowForward className="h-4 w-4 text-text-muted transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                        </div>
+                      </Link>
+                    );
+                  }
+                )}
+              </div>
+            )}
           </div>
-
-          {stats.recentCompanies.length === 0 ? (
-            <div className="py-6 text-center text-[12px] text-text-muted">No companies registered yet.</div>
-          ) : (
-            <div>
-              {stats.recentCompanies.map((c: { id: string; name: string; status: string }, i: number) => {
-                const meta = statusMeta[c.status] || { badgeBg: 'bg-neutral-bg', badgeColor: 'text-neutral' };
-                return (
-                  <Link
-                    key={c.id}
-                    href={`/companies/${c.id}`}
-                    className="flex items-center justify-between border-b border-border py-[11px] text-[12.5px] font-bold text-foreground no-underline transition-colors last:border-0 hover:text-primary"
-                  >
-                    <span>{c.name}</span>
-                    <span className={`badge ${meta.badgeBg} ${meta.badgeColor}`}>
-                      {c.status}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
         </div>
 
-        {/* Recent Activity */}
-        <div className="col-span-5 card-lg p-[22px]">
-          <div className="mb-[14px] flex items-center justify-between">
-            <div>
-              <h3 className="m-0 text-[16px] font-bold text-foreground">Recent Activity</h3>
-              <p className="m-0 mt-[3px] text-[11px] font-medium text-text-secondary">
-                Latest audit trail entries
-              </p>
+        {/* Right Column: Audit Logs (5 cols) */}
+        <div className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-6 shadow-sm lg:col-span-5">
+          <div>
+            <div className="mb-4 flex items-center justify-between border-b border-border pb-3.5">
+              <div>
+                <h3 className="text-base font-extrabold text-foreground">Audit Logs</h3>
+                <p className="text-xs font-medium text-text-secondary">
+                  Recent platform administration activities
+                </p>
+              </div>
+              <Link
+                href="/audit-log"
+                className="inline-flex items-center gap-1 text-xs font-bold text-primary transition-colors hover:text-primary-dark"
+              >
+                All Logs
+                <MdArrowForward className="h-4 w-4" />
+              </Link>
             </div>
-            <Link
-              href="/audit-log"
-              className="text-[11px] font-bold text-primary no-underline transition-colors hover:text-primary-dark"
-            >
-              View All
-            </Link>
+
+            {stats.recentAudit.length === 0 ? (
+              <div className="py-12 text-center">
+                <MdHistory className="mx-auto h-10 w-10 text-text-muted opacity-40" />
+                <p className="mt-2 text-xs font-bold text-foreground">No Audit Events Yet</p>
+                <p className="text-[11px] text-text-secondary">Audit log events will appear here</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border/50">
+                {stats.recentAudit.map(
+                  (a: {
+                    id: string;
+                    action: string;
+                    targetType?: string | null;
+                    createdAt?: string | Date;
+                    superAdmin?: { name: string; email?: string } | null;
+                  }) => {
+                    const adminDisplayName = a.superAdmin?.name || a.superAdmin?.email?.split('@')[0] || 'System Admin';
+
+                    return (
+                      <Link
+                        key={a.id}
+                        href={`/audit-log/${a.id}`}
+                        className="group flex items-center justify-between gap-2 py-2.5 transition-colors hover:bg-background/80"
+                      >
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <div className="flex h-6 w-6 flex-none items-center justify-center rounded-md bg-primary/10 text-primary transition-transform group-hover:scale-110">
+                            <MdHistory className="h-3.5 w-3.5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="truncate text-xs font-bold text-foreground group-hover:text-primary">
+                                {a.action}
+                              </span>
+                              {a.targetType && (
+                                <span className="flex-none rounded bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-text-secondary">
+                                  {a.targetType}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-none items-center gap-2.5 text-right text-[10.5px]">
+                          <span className="inline-flex items-center gap-1 font-semibold text-text-secondary group-hover:text-foreground">
+                            <MdPerson className="h-3.5 w-3.5 text-primary" />
+                            {adminDisplayName}
+                          </span>
+                          {a.createdAt && (
+                            <span className="text-text-muted">
+                              {new Date(a.createdAt).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          )}
+                          <MdArrowForward className="h-3.5 w-3.5 text-text-muted opacity-60 transition-all group-hover:translate-x-0.5 group-hover:text-primary group-hover:opacity-100" />
+                        </div>
+                      </Link>
+                    );
+                  }
+                )}
+              </div>
+            )}
           </div>
-
-          {stats.recentAudit.length === 0 ? (
-            <div className="py-6 text-center text-[12px] text-text-muted">No activity recorded yet.</div>
-          ) : (
-            <div className="relative flex flex-col gap-[18px]">
-              {/* Timeline line */}
-              <div className="absolute left-[15px] top-[6px] bottom-[6px] w-px bg-border" />
-
-              {stats.recentAudit.map((a: { id: string; action: string; superAdmin?: { name: string } | null }) => (
-                <div key={a.id} className="relative flex gap-3">
-                  <div className="z-10 flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] bg-[rgba(111,211,196,0.14)] text-primary">
-                    <MdHistory size={16} />
-                  </div>
-                  <div className="flex-1 pt-px">
-                    <p className="m-0 text-[12px] leading-[1.4] text-foreground">
-                      <span className="font-bold">{a.action}</span>
-                    </p>
-                    <div className="mt-1 flex items-center gap-[6px]">
-                      <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-text-muted">
-                        <MdPerson size={12} />
-                        {a.superAdmin?.name || 'System'}
-                      </span>
-                      <span className="rounded-[5px] bg-muted px-[5px] py-px text-[9px] font-bold text-text-secondary">
-                        AUDIT
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="card-lg p-[22px]">
-        <h3 className="mb-4 text-[16px] font-bold text-foreground">Quick Actions</h3>
-        <div className="flex gap-3">
-          <Link
-            href="/companies/new"
-            className="btn-primary"
-          >
-            <MdBusiness size={16} />
-            New Company
-          </Link>
-          <Link
-            href="/companies"
-            className="inline-flex items-center gap-[6px] rounded-[12px] border border-border bg-background px-[18px] py-[8px] text-[13px] font-bold text-text-strong-2 no-underline transition-colors hover:bg-muted"
-          >
-            Manage Companies
-            <MdArrowForward size={16} />
-          </Link>
         </div>
       </div>
     </div>

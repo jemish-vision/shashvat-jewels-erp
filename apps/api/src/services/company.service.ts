@@ -278,8 +278,21 @@ export async function getDashboardStats() {
   const [total, byStatus, recentCompanies, recentAudit] = await Promise.all([
     prisma.company.count({ where: { deletedAt: null } }),
     prisma.company.groupBy({ by: ['status'], _count: true, where: { deletedAt: null } }),
-    prisma.company.findMany({ where: { deletedAt: null }, orderBy: { createdAt: 'desc' }, take: 5 }),
-    prisma.platformAuditLog.findMany({ orderBy: { createdAt: 'desc' }, take: 10, include: { superAdmin: { select: { name: true } } } }),
+    prisma.company.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      take: 6,
+      include: {
+        _count: {
+          select: { users: true, branches: true },
+        },
+      },
+    }),
+    prisma.platformAuditLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      include: { superAdmin: { select: { name: true, email: true } } },
+    }),
   ]);
 
   return { total, byStatus: Object.fromEntries(byStatus.map((s) => [s.status, s._count])), recentCompanies, recentAudit };

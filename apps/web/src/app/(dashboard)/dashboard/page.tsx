@@ -216,7 +216,7 @@ export default function TenantDashboardHome() {
                 </span>
               </div>
               <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                +12.4%
+                +0%
               </span>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
@@ -239,7 +239,7 @@ export default function TenantDashboardHome() {
                 </span>
               </div>
               <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                +9%
+                +0%
               </span>
             </div>
             <div className="mt-4 flex items-baseline gap-1.5">
@@ -285,7 +285,7 @@ export default function TenantDashboardHome() {
                   Diamonds on Hold
                 </span>
               </div>
-              <span className="text-xs font-semibold text-text-secondary">$1.2M</span>
+              <span className="text-xs font-semibold text-text-secondary">$0</span>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-2xl font-extrabold tracking-tight text-foreground">
@@ -325,7 +325,6 @@ export default function TenantDashboardHome() {
                   Monthly Revenue
                 </span>
               </div>
-              <span className="text-[11px] font-medium text-text-muted">Target: $5M</span>
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-2xl font-extrabold tracking-tight text-foreground">
@@ -368,14 +367,13 @@ export default function TenantDashboardHome() {
                 </span>
               </div>
               <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                +12%
+                +0%
               </span>
             </div>
             <div className="mt-4 flex items-baseline justify-between">
               <span className="text-2xl font-extrabold tracking-tight text-foreground">
                 {metrics.totalCustomers.toLocaleString()}
               </span>
-              <span className="text-xs font-medium text-text-muted">412 active</span>
             </div>
           </div>
         </div>
@@ -390,9 +388,6 @@ export default function TenantDashboardHome() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-extrabold text-foreground">Revenue Performance</h3>
-                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                  Live Feed
-                </span>
               </div>
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="text-2xl font-extrabold tracking-tight text-foreground">
@@ -409,9 +404,9 @@ export default function TenantDashboardHome() {
                   key={p}
                   type="button"
                   onClick={() => setPeriod(p)}
-                  className={`rounded-md px-3 py-1 text-xs font-semibold transition-all ${
+                  className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${
                     period === p
-                      ? 'bg-primary text-primary-ink shadow-sm'
+                      ? 'bg-primary text-white shadow-sm'
                       : 'text-text-secondary hover:text-foreground'
                   }`}
                 >

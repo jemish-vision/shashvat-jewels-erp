@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { listCompanies, suspendCompany, reactivateCompany, deleteCompany } from '@/features/super-admin/queries';
 import Link from 'next/link';
 import { FilterCard } from '@/components/ui/filter-card';
@@ -39,6 +40,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function CompaniesPage() {
+  const router = useRouter();
   const { confirm } = useConfirm();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -213,7 +215,11 @@ export default function CompaniesPage() {
                   const meta = statusMeta[c.status] || { badge: 'bg-neutral-bg text-neutral' };
                   const actionOpen = openActionId === c.id;
                   return (
-                    <tr key={c.id} className="border-t border-border transition-colors hover:bg-[#f8fafc]">
+                    <tr
+                      key={c.id}
+                      onClick={() => router.push(`/companies/${c.id}`)}
+                      className="cursor-pointer border-t border-border transition-colors hover:bg-primary/5"
+                    >
                       <td className="px-[14px] py-[10px] text-[12.5px] font-bold text-foreground">{c.name}</td>
                       <td className="px-[14px] py-[10px] text-[11.5px] font-medium text-text-muted">{c.slug}</td>
                       <td className="px-[14px] py-[10px]">
@@ -225,7 +231,7 @@ export default function CompaniesPage() {
                       <td className="px-[14px] py-[10px] text-[11.5px] font-medium text-text-secondary">
                         {new Date(c.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
-                      <td className="px-[14px] py-[10px]">
+                      <td className="px-[14px] py-[10px]" onClick={(e) => e.stopPropagation()}>
                         <div className="relative inline-flex">
                           <button
                             data-action-toggle

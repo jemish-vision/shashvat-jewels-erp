@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getAuditLog } from '@/features/super-admin/queries';
 import Link from 'next/link';
 import { FilterCard } from '@/components/ui/filter-card';
@@ -26,6 +27,7 @@ const TARGET_TYPES = [
 ];
 
 export default function AuditLogPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [targetType, setTargetType] = useState('');
 
@@ -138,7 +140,11 @@ export default function AuditLogPage() {
                 </thead>
                 <tbody>
                   {items.map((a) => (
-                    <tr key={a.id} className="border-t border-border transition-colors hover:bg-[#f8fafc]">
+                    <tr
+                      key={a.id}
+                      onClick={() => router.push(`/audit-log/${a.id}`)}
+                      className="cursor-pointer border-t border-border transition-colors hover:bg-primary/5 group"
+                    >
                       <td className="px-[14px] py-[10px]">
                         <div className="flex items-center gap-2">
                           <div className="flex h-[24px] w-[24px] flex-none items-center justify-center rounded-[7px] bg-[rgba(111,211,196,0.14)] text-primary">
