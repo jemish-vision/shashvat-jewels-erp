@@ -26,7 +26,7 @@ Code audit revealed plan was stale. Key delta:
 | # | Module | Depends on | Real status | Notes |
 |---|--------|-----------|--------|-------|
 | 01 | Foundation & Database Core | — | done ✓ | Full schema (54 models), shared-types, app skeleton, test harness |
-| 02 | Super Admin Platform Portal | 01 | done ✓ | All phases complete. 46 unit + 53 integration + 41 frontend + 7 E2E tests written |
+| 02 | Super Admin Platform Portal | 01 | done ✓ | All phases complete. Unified Super/Tenant Login, auto Company Admin seeding, password toggle, custom confirm modal |
 | 03 | Company Onboarding, Tenant Auth & RBAC | 02 | scaffolded | Tenant routes/controllers exist (0B). Web pages scaffolded (0B) |
 | 04 | Tenant Masters & ERP Shell | 03 | scaffolded | Settings/customers/vendors routes empty. Web settings pages empty |
 | 05 | Inventory Core & Certified Diamonds | 04 | scaffolded | Certified diamond routes/controller/schema empty. Web pages empty |

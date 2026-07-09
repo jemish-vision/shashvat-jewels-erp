@@ -59,7 +59,7 @@ export default function AuditEntryDetailPage() {
 
   const actionLabel = entry.action.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
 
-  const detailFields = [
+  const detailFields: Array<{ label: string; value: React.ReactNode; icon: React.ReactNode }> = [
     { label: 'Action', value: actionLabel, icon: <MdHistory size={14} /> },
     { label: 'Target Type', value: entry.targetType || '—', icon: <MdBusiness size={14} /> },
     { label: 'Target ID', value: entry.targetId || '—', icon: <MdDataObject size={14} /> },
@@ -67,7 +67,7 @@ export default function AuditEntryDetailPage() {
     { label: 'Timestamp', value: time, icon: <MdAccessTime size={14} /> },
   ];
 
-  const hasChanges = entry.before || entry.after;
+  const hasChanges = Boolean(entry.before || entry.after);
 
   return (
     <div className="flex flex-col gap-5">

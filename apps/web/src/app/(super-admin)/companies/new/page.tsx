@@ -38,7 +38,7 @@ export default function NewCompanyPage() {
   }
 
   const mutation = useMutation({
-    mutationFn: () => createCompany(form),
+    mutationFn: () => createCompany(form as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['super-admin', 'companies'] });
       toast('Company created successfully', 'success');

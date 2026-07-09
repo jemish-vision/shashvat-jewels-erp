@@ -1,6 +1,6 @@
 # Module 02 — Super Admin Platform Portal
 
-Status: planned
+Status: done
 Depends on: Module 01 (Foundation)
 Master: [../master-plan.md](../master-plan.md)
 
@@ -92,12 +92,15 @@ E2E (Playwright):
 
 ## Deliverables checklist
 
-- [ ] Login works for super admin end to end (browser)
-- [ ] Company lifecycle CRUD + status machine, fully audited
-- [ ] `require-super-admin` guard proven by tests
-- [ ] Platform dashboard with real counts
-- [ ] Auth infrastructure (JWT + refresh + middleware) reusable by Module 03 without rework
-- [ ] Error codes added: `INVALID_CREDENTIALS`, `COMPANY_SUSPENDED`, `DUPLICATE_ENTRY` (in shared-types)
+- [x] Login works for super admin end to end (browser)
+- [x] Company lifecycle CRUD + status machine, fully audited
+- [x] `require-super-admin` guard proven by tests
+- [x] Platform dashboard with real counts
+- [x] Auth infrastructure (JWT + refresh + middleware) reusable by Module 03 without rework
+- [x] Error codes added: `INVALID_CREDENTIALS`, `COMPANY_SUSPENDED`, `DUPLICATE_ENTRY` (in shared-types)
+- [x] Unified Tenant & Super Admin Login with auto-seeding of Company Administrator credentials
+- [x] Custom glassmorphism modal confirmation component (`useConfirm`) for destructive actions
+- [x] Password inspect visibility eye icon toggle across onboarding and login forms
 
 ## Risks / notes
 

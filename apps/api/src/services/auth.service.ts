@@ -31,34 +31,75 @@ function signRefreshToken(userId: string): string {
   return token;
 }
 
-export async function login(email: string, password: string) {
+export async function login(rawEmail: string, password: string) {
+  const email = rawEmail.trim().toLowerCase();
   const superAdmin = await prisma.superAdmin.findUnique({ where: { email } });
-  if (!superAdmin) {
+  if (superAdmin) {
+    const valid = await bcrypt.compare(password, superAdmin.passwordHash);
+    if (!valid) {
+      return { success: false as const, code: 'INVALID_CREDENTIALS' as const };
+    }
+    if (!superAdmin.isActive) {
+      return { success: false as const, code: 'ACCOUNT_DISABLED' as const };
+    }
+    const session: SessionPayload & { name: string; email: string } = {
+      userId: superAdmin.id,
+      companyId: null,
+      branchId: null,
+      role: 'SUPER_ADMIN',
+      permissions: [],
+      name: superAdmin.name,
+      email: superAdmin.email,
+    };
+    const accessToken = signAccessToken(session);
+    const refreshToken = signRefreshToken(superAdmin.id);
+    await prisma.superAdmin.update({
+      where: { id: superAdmin.id },
+      data: { lastLoginAt: new Date() },
+    });
+    return { success: true as const, accessToken, refreshToken, session };
+  }
+
+  const tenantUser = await prisma.user.findFirst({
+    where: { email },
+    include: {
+      company: true,
+      role: { include: { permissions: { include: { permission: true } } } },
+    },
+  });
+
+  if (!tenantUser) {
     return { success: false as const, code: 'INVALID_CREDENTIALS' as const };
   }
 
-  const valid = await bcrypt.compare(password, superAdmin.passwordHash);
+  const valid = await bcrypt.compare(password, tenantUser.passwordHash);
   if (!valid) {
     return { success: false as const, code: 'INVALID_CREDENTIALS' as const };
   }
 
-  if (!superAdmin.isActive) {
+  if (!tenantUser.isActive || tenantUser.company.deletedAt || tenantUser.company.status === 'SUSPENDED') {
     return { success: false as const, code: 'ACCOUNT_DISABLED' as const };
   }
 
-  const session: SessionPayload = {
-    userId: superAdmin.id,
-    companyId: null,
-    branchId: null,
-    role: 'SUPER_ADMIN',
-    permissions: [],
+  const permissions = tenantUser.role.permissions.map(
+    (rp) => `${rp.permission.resource}:${rp.permission.action}`
+  );
+
+  const session: SessionPayload & { name: string; email: string } = {
+    userId: tenantUser.id,
+    companyId: tenantUser.companyId,
+    branchId: tenantUser.branchId,
+    role: tenantUser.role.name,
+    permissions,
+    name: tenantUser.name,
+    email: tenantUser.email,
   };
 
   const accessToken = signAccessToken(session);
-  const refreshToken = signRefreshToken(superAdmin.id);
+  const refreshToken = signRefreshToken(tenantUser.id);
 
-  await prisma.superAdmin.update({
-    where: { id: superAdmin.id },
+  await prisma.user.update({
+    where: { id: tenantUser.id },
     data: { lastLoginAt: new Date() },
   });
 
@@ -96,16 +137,41 @@ export function logout(refreshToken: string): void {
 
 export async function getSession(userId: string) {
   const superAdmin = await prisma.superAdmin.findUnique({ where: { id: userId } });
-  if (!superAdmin) return null;
+  if (superAdmin) {
+    return {
+      userId: superAdmin.id,
+      companyId: null,
+      branchId: null,
+      role: 'SUPER_ADMIN' as const,
+      permissions: [],
+      name: superAdmin.name,
+      email: superAdmin.email,
+      lastLoginAt: superAdmin.lastLoginAt,
+    };
+  }
+
+  const tenantUser = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      role: { include: { permissions: { include: { permission: true } } } },
+    },
+  });
+
+  if (!tenantUser) return null;
+
+  const permissions = tenantUser.role.permissions.map(
+    (rp) => `${rp.permission.resource}:${rp.permission.action}`
+  );
+
   return {
-    userId: superAdmin.id,
-    companyId: null,
-    branchId: null,
-    role: 'SUPER_ADMIN' as const,
-    permissions: [],
-    name: superAdmin.name,
-    email: superAdmin.email,
-    lastLoginAt: superAdmin.lastLoginAt,
+    userId: tenantUser.id,
+    companyId: tenantUser.companyId,
+    branchId: tenantUser.branchId,
+    role: tenantUser.role.name,
+    permissions,
+    name: tenantUser.name,
+    email: tenantUser.email,
+    lastLoginAt: tenantUser.lastLoginAt,
   };
 }
 

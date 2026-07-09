@@ -18,7 +18,7 @@ export interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthUser>;
   logout: () => Promise<void>;
 }
 
@@ -80,14 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
     setCookie('auth-token', '1', 7 * 24 * 60 * 60);
 
-    setUser({
+    const authUser: AuthUser = {
       userId: data.session.userId,
       companyId: data.session.companyId,
       branchId: data.session.branchId,
       role: data.session.role,
       permissions: data.session.permissions,
       email,
-    });
+    };
+    setUser(authUser);
+    return authUser;
   }, []);
 
   const logout = useCallback(async () => {

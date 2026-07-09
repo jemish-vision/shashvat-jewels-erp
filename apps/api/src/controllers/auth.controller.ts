@@ -32,11 +32,12 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       return;
     }
 
+    const isSuperAdmin = result.session.role === 'SUPER_ADMIN';
     await prisma.platformAuditLog.create({
       data: {
-        superAdminId: result.session.userId,
+        superAdminId: isSuperAdmin ? result.session.userId : null,
         action: 'LOGIN',
-        targetType: 'SuperAdmin',
+        targetType: isSuperAdmin ? 'SuperAdmin' : 'User',
         targetId: result.session.userId,
         ipAddress,
       },

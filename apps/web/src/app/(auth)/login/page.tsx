@@ -22,9 +22,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
+      const user = await login(email, password);
       toast('Signed in successfully', 'success');
-      router.push('/');
+      const targetRoute = user.role === 'SUPER_ADMIN' ? '/' : '/sales';
+      router.push(targetRoute);
       router.refresh();
     } catch (err) {
       if (err instanceof ApiError) {
