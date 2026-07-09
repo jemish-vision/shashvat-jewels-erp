@@ -87,7 +87,7 @@ export default function LoginPage() {
             {/* Email field */}
             <div>
               <label htmlFor="email" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-text-strong-2">
-                Enterprise Email
+                Email
               </label>
               <div className="relative">
                 <MdEmail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-text-muted" />

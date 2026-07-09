@@ -117,7 +117,6 @@ export default function SuperAdminDashboard() {
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-black tracking-tight text-foreground">{stats.total}</span>
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">+100% Active</span>
             </div>
           </div>
 
@@ -133,7 +132,6 @@ export default function SuperAdminDashboard() {
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-black tracking-tight text-foreground">{activeCount}</span>
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{activePct}%</span>
             </div>
           </div>
 
