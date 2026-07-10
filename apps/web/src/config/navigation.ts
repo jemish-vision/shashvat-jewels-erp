@@ -6,7 +6,7 @@ export interface NavGroup {
 export interface NavItem {
   label: string;
   href: string;
-  icon: string; // Lucide icon name
+  icon: string; // Lucide / Material icon key
   permission?: string;
   badge?: string;
 }
@@ -23,12 +23,6 @@ export const superAdminNav: NavGroup[] = [
     items: [
       { label: 'Companies', href: '/companies', icon: 'business' },
       { label: 'Audit Log', href: '/audit-log', icon: 'history' },
-    ],
-  },
-  {
-    label: 'System',
-    items: [
-      { label: 'Settings', href: '/settings', icon: 'settings' },
     ],
   },
 ];
@@ -75,10 +69,12 @@ export const tenantNav: NavGroup[] = [
     ],
   },
   {
-    label: 'System',
+    label: 'Access & Governance',
     items: [
+      { label: 'Roles & Permissions', href: '/dashboard/roles', icon: 'security', permission: 'role:view' },
+      // { label: 'Branch Management', href: '/dashboard/branches', icon: 'store', permission: 'branch:view' },
+      { label: 'Sub Admins', href: '/dashboard/sub-admins', icon: 'people', permission: 'user:view' },
       { label: 'Notifications', href: '/dashboard/notifications', icon: 'notifications', permission: 'notification:view' },
-      { label: 'Settings', href: '/dashboard/settings', icon: 'settings', permission: 'settings:view' },
     ],
   },
 ];

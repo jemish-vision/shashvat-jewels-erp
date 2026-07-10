@@ -1,6 +1,6 @@
 import { prisma } from './prisma.js';
 
-const SKIP_MODELS = ['SuperAdmin', 'Company', 'PlatformAuditLog', 'PasswordResetToken', 'Permission'];
+const SKIP_MODELS = ['SuperAdmin', 'Company', 'PlatformAuditLog', 'PasswordResetToken', 'Permission', 'RolePermission'];
 
 export function createTenantExtension(companyId: string) {
   return prisma.$extends({

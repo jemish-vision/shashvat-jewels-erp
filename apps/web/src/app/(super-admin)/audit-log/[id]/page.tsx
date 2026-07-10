@@ -70,37 +70,37 @@ export default function AuditEntryDetailPage() {
   const hasChanges = Boolean(entry.before || entry.after);
 
   return (
-    <div className="flex flex-col gap-5">
-
+    <div className="flex flex-col gap-6">
       {/* Back link */}
-      <Link href="/audit-log" className="flex items-center gap-1.5 text-[12px] font-bold text-primary no-underline hover:underline">
-        <MdChevronLeft size={16} />
-        Back to Audit Log
-      </Link>
+      <div>
+        <Link
+          href="/audit-log"
+          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-primary transition-opacity hover:opacity-80"
+        >
+          <MdChevronLeft size={16} />
+          Back to Audit Log
+        </Link>
+      </div>
 
-      {/* Header card */}
-      <div className="card-lg px-5 py-[18px]">
-        <div className="flex items-start justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-[12px] bg-[rgba(111,211,196,0.14)] text-primary shadow-[0_6px_16px_-10px_rgba(63,163,147,0.4)]">
-              <MdHistory size={24} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="m-0 text-[18px] font-extrabold tracking-tight text-foreground">
-                  #{entry.id.slice(0, 12)}
-                </h1>
-                <span className="inline-flex items-center gap-1.5 rounded-[7px] bg-[rgba(111,211,196,0.14)] px-[10px] py-[3px] text-[11px] font-bold text-primary">
-                  <span className="h-[5px] w-[5px] rounded-full bg-primary" />
-                  {actionLabel}
-                </span>
-              </div>
-              <p className="m-0 mt-[3px] text-[12px] font-medium text-text-secondary">
-                {time}
-              </p>
-            </div>
+      {/* Header section matching Company Admin Roles exactly */}
+      <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-primary/15 text-xl text-primary">
+            <MdHistory size={26} />
           </div>
-
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-xl font-black text-foreground">
+                #{entry.id.slice(0, 12)}
+              </h1>
+              <span className="rounded bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                {actionLabel}
+              </span>
+            </div>
+            <p className="text-xs text-text-secondary mt-0.5">
+              Logged at {time} • IP: {entry.ipAddress || 'Unknown'}
+            </p>
+          </div>
         </div>
       </div>
 

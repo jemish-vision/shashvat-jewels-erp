@@ -126,57 +126,59 @@ export default function AuditLogPage() {
       ) : (
         <>
           {/* Table */}
-          <div className="card-lg">
-            <div className="overflow-visible">
+          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="bg-muted">
-                    <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Action</th>
-                    <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Target</th>
-                    <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Admin</th>
-                    <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">IP</th>
-                    <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Time</th>
+                  <tr className="border-b border-border bg-muted/50 text-[11px] font-extrabold uppercase tracking-wider text-text-secondary">
+                    <th className="p-4">Action</th>
+                    <th className="p-4">Target</th>
+                    <th className="p-4">Admin</th>
+                    <th className="p-4">IP Address</th>
+                    <th className="p-4">Time</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border/60 text-xs">
                   {items.map((a) => (
                     <tr
                       key={a.id}
                       onClick={() => router.push(`/audit-log/${a.id}`)}
-                      className="cursor-pointer border-t border-border transition-colors hover:bg-primary/5 group"
+                      className="group cursor-pointer transition-colors hover:bg-muted/40"
                     >
-                      <td className="px-[14px] py-[10px]">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-[24px] w-[24px] flex-none items-center justify-center rounded-[7px] bg-[rgba(111,211,196,0.14)] text-primary">
-                            <MdHistory size={13} />
+                      <td className="p-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-primary/15 text-primary">
+                            <MdHistory size={16} />
                           </div>
-                          <span className="text-[12.5px] font-bold text-foreground">{a.action}</span>
+                          <span className="font-extrabold text-foreground group-hover:text-primary transition-colors">
+                            {a.action}
+                          </span>
                         </div>
                       </td>
-                      <td className="px-[14px] py-[10px] text-[11.5px] font-medium text-text-muted">
+                      <td className="p-4 font-medium text-text-muted">
                         {a.targetType}#{a.targetId?.slice(0, 8) || '—'}
                       </td>
-                      <td className="px-[14px] py-[10px]">
+                      <td className="p-4">
                         <Link
                           href={`/audit-log/${a.id}`}
-                          className="flex items-center gap-[7px] no-underline group"
+                          className="flex items-center gap-2 no-underline group/link"
                         >
                           <div className="flex flex-col">
-                            <span className="flex items-center gap-1.5 text-[12px] font-bold text-foreground leading-tight group-hover:text-primary transition-colors">
+                            <span className="flex items-center gap-1.5 font-bold text-foreground leading-tight group-hover/link:text-primary transition-colors">
                               {a.superAdmin?.name || 'System'}
-                              <MdOpenInNew size={12} className="text-text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                              <MdOpenInNew size={12} className="text-text-muted opacity-0 group-hover/link:opacity-100 transition-opacity" />
                             </span>
-                            <span className="flex items-center gap-1 text-[9px] font-bold uppercase text-text-muted leading-tight">
-                              <MdAdminPanelSettings size={10} />
+                            <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-text-muted leading-tight">
+                              <MdAdminPanelSettings size={11} />
                               {a.superAdmin ? 'Admin' : 'Automated'}
                             </span>
                           </div>
                         </Link>
                       </td>
-                      <td className="px-[14px] py-[10px] font-mono text-[11.5px] font-medium text-text-secondary">
+                      <td className="p-4 font-mono text-text-secondary">
                         {a.ipAddress || '—'}
                       </td>
-                      <td className="px-[14px] py-[10px] text-[11.5px] font-medium text-text-secondary">
+                      <td className="p-4 text-text-secondary">
                         {new Date(a.createdAt).toLocaleString('en-IN')}
                       </td>
                     </tr>

@@ -44,7 +44,6 @@ export default function CompaniesPage() {
   const { confirm } = useConfirm();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [openActionId, setOpenActionId] = useState<string | null>(null);
 
   const { items, isLoading, error, resetPage, paginationProps } = usePaginatedQuery<Company>({
     queryKey: ['super-admin', 'companies', search, statusFilter],
@@ -88,18 +87,6 @@ export default function CompaniesPage() {
   });
 
   const hasActiveFilters = search || statusFilter;
-
-  // Row action menu — close on any click outside toggle/dropdown
-  useEffect(() => {
-    if (!openActionId) return;
-    function handleClick(e: MouseEvent) {
-      const el = e.target as HTMLElement;
-      if (el.closest('[data-action-toggle]') || el.closest('[data-action-dropdown]')) return;
-      setOpenActionId(null);
-    }
-    setTimeout(() => document.addEventListener('click', handleClick), 0);
-    return () => document.removeEventListener('click', handleClick);
-  }, [openActionId]);
 
   function resetFilters() {
     setSearch('');
@@ -197,114 +184,127 @@ export default function CompaniesPage() {
         </div>
       ) : (
         // Table
-        <div className="card-lg">
-          <div className="overflow-visible">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="bg-muted">
-                  <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Name</th>
-                  <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Slug</th>
-                  <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Status</th>
-                  <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Admin Email</th>
-                  <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Created</th>
-                  <th className="px-[14px] py-[9px] text-[9.5px] font-bold uppercase tracking-[0.06em] text-text-secondary">Actions</th>
+                <tr className="border-b border-border bg-muted/50 text-[11px] font-extrabold uppercase tracking-wider text-text-secondary">
+                  <th className="p-4">Company & Slug</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4">Admin Email</th>
+                  <th className="p-4">Created Date</th>
+                  <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-border/60 text-xs">
                 {items.map((c) => {
-                  const meta = statusMeta[c.status] || { badge: 'bg-neutral-bg text-neutral' };
-                  const actionOpen = openActionId === c.id;
                   return (
                     <tr
                       key={c.id}
                       onClick={() => router.push(`/companies/${c.id}`)}
-                      className="cursor-pointer border-t border-border transition-colors hover:bg-primary/5"
+                      className="group cursor-pointer transition-colors hover:bg-muted/40"
                     >
-                      <td className="px-[14px] py-[10px] text-[12.5px] font-bold text-foreground">{c.name}</td>
-                      <td className="px-[14px] py-[10px] text-[11.5px] font-medium text-text-muted">{c.slug}</td>
-                      <td className="px-[14px] py-[10px]">
-                        <span className={`inline-flex items-center rounded-[6px] px-[9px] py-[3px] text-[10px] font-bold uppercase leading-none ${meta.badge}`}>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-primary text-sm">
+                            <MdBusiness size={16} />
+                          </div>
+                          <div>
+                            <div className="font-extrabold text-foreground group-hover:text-primary transition-colors">
+                              {c.name}
+                            </div>
+                            <div className="text-[11px] text-text-secondary line-clamp-1">
+                              {c.slug}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="p-4">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            c.status === 'ACTIVE'
+                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                              : c.status === 'SUSPENDED'
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                              : 'bg-primary/15 text-primary'
+                          }`}
+                        >
                           {c.status}
                         </span>
                       </td>
-                      <td className="px-[14px] py-[10px] text-[11.5px] font-medium text-text-strong-2">{c.email || '—'}</td>
-                      <td className="px-[14px] py-[10px] text-[11.5px] font-medium text-text-secondary">
-                        {new Date(c.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
+
+                      <td className="p-4 font-semibold text-foreground">
+                        {c.email || '—'}
                       </td>
-                      <td className="px-[14px] py-[10px]" onClick={(e) => e.stopPropagation()}>
-                        <div className="relative inline-flex">
+
+                      <td className="p-4 text-text-secondary">
+                        {new Date(c.createdAt).toLocaleDateString('en-IN', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </td>
+
+                      <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="inline-flex items-center gap-1">
                           <button
-                            data-action-toggle
-                            onClick={() => setOpenActionId(actionOpen ? null : c.id)}
-                            className="flex h-[26px] w-[26px] items-center justify-center rounded-[7px] border-none bg-none text-text-muted transition-colors hover:bg-muted hover:text-text-strong-2"
+                            onClick={() => router.push(`/companies/${c.id}`)}
+                            title="View Company"
+                            className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-text-secondary transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary"
                           >
-                            <MdMoreVert size={16} />
+                            <MdVisibility size={14} />
                           </button>
-                          {actionOpen && (
-                            <div data-action-dropdown className="absolute left-full top-0 z-[9999] ml-1.5 w-[160px] animate-[fadeUp_0.15s_ease-out] overflow-hidden rounded-xl border border-border bg-card shadow-[0_8px_24px_rgba(15,23,42,0.10),0_2px_6px_rgba(15,23,42,0.04)]">
-                              <Link
-                                href={`/companies/${c.id}`}
-                                onClick={() => setOpenActionId(null)}
-                                className="flex items-center gap-2.5 px-3.5 py-[9px] text-[12px] font-medium text-text-strong-2 no-underline transition-colors hover:bg-background"
-                              >
-                                <MdVisibility size={15} className="text-text-muted" />
-                                View
-                              </Link>
-                              {c.status !== 'CANCELLED' && (
-                                <>
-                                  <div className="mx-3.5 border-t border-border" />
-                                  {c.status === 'SUSPENDED' ? (
-                                    <button
-                                      onClick={() => { setOpenActionId(null); reactivateMutation.mutate(c.id); }}
-                                      disabled={reactivateMutation.isPending}
-                                      className="flex w-full items-center gap-2.5 px-3.5 py-[9px] text-[12px] font-medium text-success transition-colors hover:bg-background"
-                                    >
-                                      <MdCheckCircle size={15} />
-                                      {reactivateMutation.isPending ? '…' : 'Reactivate'}
-                                    </button>
-                                  ) : (
-                                    <button
-                                      onClick={async () => {
-                                        setOpenActionId(null);
-                                        const ok = await confirm(
-                                          'Suspend this company? Users belonging to this organization will lose access immediately.',
-                                          {
-                                            title: 'Suspend Company',
-                                            variant: 'warning',
-                                            confirmText: 'Suspend Company',
-                                          }
-                                        );
-                                        if (ok) suspendMutation.mutate(c.id);
-                                      }}
-                                      disabled={suspendMutation.isPending}
-                                      className="flex w-full items-center gap-2.5 px-3.5 py-[9px] text-[12px] font-medium text-warning transition-colors hover:bg-background"
-                                    >
-                                      <MdBlock size={15} />
-                                      {suspendMutation.isPending ? '…' : 'Suspend'}
-                                    </button>
-                                  )}
-                                  <button
-                                    onClick={async () => {
-                                      setOpenActionId(null);
-                                      const ok = await confirm(
-                                        'Permanently delete this company? All associated data will be marked as deleted.',
-                                        {
-                                          title: 'Delete Company',
-                                          variant: 'danger',
-                                          confirmText: 'Delete Company',
-                                        }
-                                      );
-                                      if (ok) deleteMutation.mutate(c.id);
-                                    }}
-                                    disabled={deleteMutation.isPending}
-                                    className="flex w-full items-center gap-2.5 px-3.5 py-[9px] text-[12px] font-medium text-danger transition-colors hover:bg-background"
-                                  >
-                                    <MdDelete size={15} />
-                                    {deleteMutation.isPending ? '…' : 'Delete'}
-                                  </button>
-                                </>
+                          {c.status !== 'CANCELLED' && (
+                            <>
+                              {c.status === 'SUSPENDED' ? (
+                                <button
+                                  onClick={() => reactivateMutation.mutate(c.id)}
+                                  disabled={reactivateMutation.isPending}
+                                  title="Reactivate Company"
+                                  className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-text-secondary transition-colors hover:border-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-600"
+                                >
+                                  <MdCheckCircle size={14} />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={async () => {
+                                    const ok = await confirm(
+                                      'Suspend this company? Users belonging to this organization will lose access immediately.',
+                                      {
+                                        title: 'Suspend Company',
+                                        variant: 'warning',
+                                        confirmText: 'Suspend Company',
+                                      }
+                                    );
+                                    if (ok) suspendMutation.mutate(c.id);
+                                  }}
+                                  disabled={suspendMutation.isPending}
+                                  title="Suspend Company"
+                                  className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-text-secondary transition-colors hover:border-amber-500 hover:bg-amber-500/10 hover:text-amber-600"
+                                >
+                                  <MdBlock size={14} />
+                                </button>
                               )}
-                            </div>
+                              <button
+                                onClick={async () => {
+                                  const ok = await confirm(
+                                    'Permanently delete this company? All associated data will be marked as deleted.',
+                                    {
+                                      title: 'Delete Company',
+                                      variant: 'danger',
+                                      confirmText: 'Delete Company',
+                                    }
+                                  );
+                                  if (ok) deleteMutation.mutate(c.id);
+                                }}
+                                disabled={deleteMutation.isPending}
+                                title="Delete Company"
+                                className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-text-secondary transition-colors hover:border-danger hover:bg-danger/10 hover:text-danger"
+                              >
+                                <MdDelete size={14} />
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>

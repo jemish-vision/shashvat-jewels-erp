@@ -182,153 +182,166 @@ export default function CompanyDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
-
+    <div className="flex flex-col gap-6">
       {/* Back link */}
-      <Link href="/companies" className="flex items-center gap-1.5 text-[12px] font-bold text-primary no-underline hover:underline">
-        <MdChevronLeft size={16} />
-        Back to Companies
-      </Link>
+      <div>
+        <Link
+          href="/companies"
+          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-primary transition-opacity hover:opacity-80"
+        >
+          <MdChevronLeft size={16} />
+          Back to Companies
+        </Link>
+      </div>
 
-      {/* Header card */}
-      <div className="card-lg px-5 py-[18px]">
-        <div className="flex items-start justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-[52px] w-[52px] flex-none items-center justify-center rounded-[12px] bg-[rgba(111,211,196,0.14)] text-primary shadow-[0_6px_16px_-10px_rgba(63,163,147,0.4)]">
+      {/* Header section matching Company Admin Roles exactly */}
+      <div className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-primary/15 text-xl text-primary">
+            <MdBusiness size={26} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
               {editing ? (
                 <input
                   value={form.name}
                   onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-[120px] border-none bg-transparent text-center text-[18px] font-extrabold text-foreground outline-none"
+                  className="m-0 border-b border-primary bg-transparent p-0 text-xl font-black tracking-tight text-foreground outline-none"
+                  style={{ width: `${Math.max((form.name?.length || 0) * 11, 140)}px` }}
                 />
               ) : (
-                <MdBusiness size={24} />
+                <h1 className="text-xl font-black text-foreground">{company.name}</h1>
               )}
+              <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${sc.badge}`}>
+                {company.status}
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                {editing ? (
-                  <input
-                    value={form.name}
-                    onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                    className="m-0 border-none bg-transparent p-0 text-[18px] font-extrabold tracking-tight text-foreground outline-none"
-                    style={{ width: `${Math.max((form.name?.length || 0) * 11, 120)}px` }}
-                  />
-                ) : (
-                  <h1 className="m-0 text-[18px] font-extrabold tracking-tight text-foreground">{company.name}</h1>
-                )}
-                <span className={`inline-flex items-center gap-1.5 rounded-[7px] px-[10px] py-[3px] text-[11px] font-bold ${sc.badge}`}>
-                  <span className={`h-[5px] w-[5px] rounded-full ${sc.dot}`} />
-                  {company.status}
-                </span>
-              </div>
-              <p className="m-0 mt-[3px] flex items-center gap-1.5 text-[12px] font-medium text-text-secondary">
-                <MdCalendarToday size={12} />
-                Created {created} · {usersCount} users · {branchesCount} branches
-              </p>
-            </div>
+            <p className="text-xs text-text-secondary mt-0.5">
+              Created {created} • {usersCount} users • {branchesCount} branches
+            </p>
           </div>
+        </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {editing ? (
-              <>
-                <button
-                  onClick={() => { setEditing(false); setForm({ name: company.name, slug: company.slug, email: company.email || '', phone: company.phone || '', address: company.address || '', city: company.city || '', country: company.country, baseCurrency: company.baseCurrency, taxId: company.taxId || '', plan: company.plan || '' }); }}
-                  className="inline-flex items-center gap-1.5 rounded-[9px] border border-input bg-card px-3.5 py-[7px] text-[12px] font-bold text-text-strong-2 transition-colors hover:bg-muted"
-                >
-                  <MdClose size={15} />
-                  Cancel
-                </button>
-                <button
-                  onClick={() => updateMutation.mutate()}
-                  disabled={updateMutation.isPending}
-                  className="inline-flex items-center gap-1.5 rounded-[9px] border-none bg-primary px-3.5 py-[7px] text-[12px] font-bold text-white shadow-[0_2px_8px_rgba(63,163,147,0.3)] transition-all hover:brightness-95 disabled:opacity-60"
-                >
-                  <MdSave size={15} />
-                  {updateMutation.isPending ? 'Saving…' : 'Save'}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => setEditing(true)}
-                  className="inline-flex items-center gap-1.5 rounded-[9px] border border-input bg-card px-3.5 py-[7px] text-[12px] font-bold text-text-strong-2 transition-colors hover:bg-muted"
-                >
-                  <MdEdit size={15} />
-                  Edit
-                </button>
-                {!isDeleted && isSuspended ? (
-                  <>
-                    <button
-                      onClick={() => reactivateMutation.mutate()}
-                      disabled={reactivateMutation.isPending}
-                      className="inline-flex items-center gap-1.5 rounded-[9px] border-none bg-success px-3.5 py-[7px] text-[12px] font-bold text-white shadow-[0_2px_8px_rgba(22,163,74,0.3)] transition-all hover:brightness-95 disabled:opacity-60"
-                    >
-                      <MdCheckCircle size={15} />
-                      {reactivateMutation.isPending ? '…' : 'Reactivate'}
-                    </button>
-                    <button
-                      onClick={async () => {
-                        const ok = await confirm(
-                          'Permanently delete this company? All associated data will be marked as deleted.',
-                          {
-                            title: 'Delete Company',
-                            variant: 'danger',
-                            confirmText: 'Delete Company',
-                          }
-                        );
-                        if (ok) deleteMutation.mutate();
-                      }}
-                      disabled={deleteMutation.isPending}
-                      className="inline-flex items-center gap-1.5 rounded-[9px] border-none bg-danger px-3.5 py-[7px] text-[12px] font-bold text-white shadow-[0_2px_8px_rgba(220,38,38,0.3)] transition-all hover:brightness-95 disabled:opacity-60"
-                    >
-                      <MdDelete size={15} />
-                      {deleteMutation.isPending ? '…' : 'Delete'}
-                    </button>
-                  </>
-                ) : !isDeleted ? (
-                  <>
-                    <button
-                      onClick={async () => {
-                        const ok = await confirm(
-                          'Suspend this company? Users belonging to this organization will lose access immediately.',
-                          {
-                            title: 'Suspend Company',
-                            variant: 'warning',
-                            confirmText: 'Suspend Company',
-                          }
-                        );
-                        if (ok) suspendMutation.mutate();
-                      }}
-                      disabled={suspendMutation.isPending}
-                      className="inline-flex items-center gap-1.5 rounded-[9px] border-none bg-warning px-3.5 py-[7px] text-[12px] font-bold text-white shadow-[0_2px_8px_rgba(217,119,6,0.3)] transition-all hover:brightness-95 disabled:opacity-60"
-                    >
-                      <MdBlock size={15} />
-                      {suspendMutation.isPending ? '…' : 'Suspend'}
-                    </button>
-                    <button
-                      onClick={async () => {
-                        const ok = await confirm(
-                          'Permanently delete this company? All associated data will be marked as deleted.',
-                          {
-                            title: 'Delete Company',
-                            variant: 'danger',
-                            confirmText: 'Delete Company',
-                          }
-                        );
-                        if (ok) deleteMutation.mutate();
-                      }}
-                      disabled={deleteMutation.isPending}
-                      className="inline-flex items-center gap-1.5 rounded-[9px] border-none bg-danger px-3.5 py-[7px] text-[12px] font-bold text-white shadow-[0_2px_8px_rgba(220,38,38,0.3)] transition-all hover:brightness-95 disabled:opacity-60"
-                    >
-                      <MdDelete size={15} />
-                      {deleteMutation.isPending ? '…' : 'Delete'}
-                    </button>
-                  </>
-                ) : null}
-              </>
-            )}
-          </div>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {editing ? (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(false);
+                  setForm({
+                    name: company.name,
+                    slug: company.slug,
+                    email: company.email || '',
+                    phone: company.phone || '',
+                    address: company.address || '',
+                    city: company.city || '',
+                    country: company.country,
+                    baseCurrency: company.baseCurrency,
+                    taxId: company.taxId || '',
+                    plan: company.plan || '',
+                  });
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-bold text-foreground hover:bg-muted"
+              >
+                <MdClose size={16} />
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => updateMutation.mutate()}
+                disabled={updateMutation.isPending}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:brightness-95 disabled:opacity-50"
+              >
+                <MdSave size={16} />
+                {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-bold text-foreground hover:bg-muted"
+              >
+                <MdEdit size={16} />
+                Edit Company
+              </button>
+              {!isDeleted && isSuspended ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => reactivateMutation.mutate()}
+                    disabled={reactivateMutation.isPending}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-card px-3.5 py-2 text-xs font-bold text-emerald-600 hover:bg-emerald-500/10 disabled:opacity-50 dark:text-emerald-400"
+                  >
+                    <MdCheckCircle size={16} />
+                    {reactivateMutation.isPending ? 'Reactivating…' : 'Reactivate'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const ok = await confirm(
+                        'Permanently delete this company? All associated data will be marked as deleted.',
+                        {
+                          title: 'Delete Company',
+                          variant: 'danger',
+                          confirmText: 'Delete Company',
+                        }
+                      );
+                      if (ok) deleteMutation.mutate();
+                    }}
+                    disabled={deleteMutation.isPending}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-danger/30 bg-danger/10 px-3.5 py-2 text-xs font-bold text-danger hover:bg-danger/20 disabled:opacity-50"
+                  >
+                    <MdDelete size={16} />
+                    {deleteMutation.isPending ? 'Deleting…' : 'Delete Company'}
+                  </button>
+                </>
+              ) : !isDeleted ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const ok = await confirm(
+                        'Suspend this company? Users belonging to this organization will lose access immediately.',
+                        {
+                          title: 'Suspend Company',
+                          variant: 'warning',
+                          confirmText: 'Suspend Company',
+                        }
+                      );
+                      if (ok) suspendMutation.mutate();
+                    }}
+                    disabled={suspendMutation.isPending}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/30 bg-card px-3.5 py-2 text-xs font-bold text-amber-600 hover:bg-amber-500/10 disabled:opacity-50 dark:text-amber-400"
+                  >
+                    <MdBlock size={16} />
+                    {suspendMutation.isPending ? 'Suspending…' : 'Suspend'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const ok = await confirm(
+                        'Permanently delete this company? All associated data will be marked as deleted.',
+                        {
+                          title: 'Delete Company',
+                          variant: 'danger',
+                          confirmText: 'Delete Company',
+                        }
+                      );
+                      if (ok) deleteMutation.mutate();
+                    }}
+                    disabled={deleteMutation.isPending}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-danger/30 bg-danger/10 px-3.5 py-2 text-xs font-bold text-danger hover:bg-danger/20 disabled:opacity-50"
+                  >
+                    <MdDelete size={16} />
+                    {deleteMutation.isPending ? 'Deleting…' : 'Delete Company'}
+                  </button>
+                </>
+              ) : null}
+            </>
+          )}
         </div>
       </div>
 

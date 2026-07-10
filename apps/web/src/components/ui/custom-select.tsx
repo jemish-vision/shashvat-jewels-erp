@@ -39,6 +39,7 @@ export function CustomSelect({ options, value, onChange, placeholder = 'Select..
   return (
     <div ref={ref} className={`relative ${className}`}>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="field-compact flex w-full items-center justify-between gap-2"
         style={{ width }}
@@ -57,6 +58,7 @@ export function CustomSelect({ options, value, onChange, placeholder = 'Select..
             const active = value === opt.value;
             return (
               <button
+                type="button"
                 key={opt.value}
                 onClick={() => {
                   onChange(opt.value);

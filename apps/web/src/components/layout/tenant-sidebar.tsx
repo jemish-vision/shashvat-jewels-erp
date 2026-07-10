@@ -23,7 +23,9 @@ import {
   MdAccountBalance,
   MdInsights,
   MdNotifications,
-  MdSettings,
+  MdSecurity,
+  MdPeople,
+  MdStore,
 } from 'react-icons/md';
 
 export function TenantSidebar() {
@@ -53,7 +55,9 @@ export function TenantSidebar() {
     account_balance: <MdAccountBalance size={16} />,
     monitoring: <MdInsights size={16} />,
     notifications: <MdNotifications size={16} />,
-    settings: <MdSettings size={16} />,
+    security: <MdSecurity size={16} />,
+    people: <MdPeople size={16} />,
+    store: <MdStore size={16} />,
   };
 
   const q = search.trim().toLowerCase();
@@ -72,7 +76,7 @@ export function TenantSidebar() {
   const branchName = user?.branchName || 'All Branches (HQ)';
 
   return (
-    <aside className="fixed left-0 top-0 z-50 flex h-screen w-[var(--sidebar-w,272px)] flex-col overflow-hidden border-r border-border bg-card">
+    <aside className="fixed left-0 top-0 z-40 flex h-screen w-[var(--sidebar-w,272px)] flex-col overflow-hidden border-r border-border bg-card">
       {/* Brand Header */}
       <Link
         href="/dashboard"

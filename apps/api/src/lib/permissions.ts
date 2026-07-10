@@ -7,52 +7,61 @@ export interface PermissionDefinition {
 
 export const PERMISSION_CATALOG: PermissionDefinition[] = [
   // Branch
+  { resource: 'branch', action: 'list' },
   { resource: 'branch', action: 'view' },
   { resource: 'branch', action: 'create' },
   { resource: 'branch', action: 'update' },
   { resource: 'branch', action: 'delete' },
 
   // User
+  { resource: 'user', action: 'list' },
   { resource: 'user', action: 'view' },
   { resource: 'user', action: 'create' },
   { resource: 'user', action: 'update' },
   { resource: 'user', action: 'delete' },
 
   // Role
+  { resource: 'role', action: 'list' },
   { resource: 'role', action: 'view' },
   { resource: 'role', action: 'create' },
   { resource: 'role', action: 'update' },
   { resource: 'role', action: 'delete' },
 
   // Currency
+  { resource: 'currency', action: 'list' },
   { resource: 'currency', action: 'view' },
   { resource: 'currency', action: 'create' },
   { resource: 'currency', action: 'update' },
   { resource: 'currency', action: 'delete' },
 
   // Sequence
+  { resource: 'sequence', action: 'list' },
   { resource: 'sequence', action: 'view' },
   { resource: 'sequence', action: 'create' },
   { resource: 'sequence', action: 'update' },
   { resource: 'sequence', action: 'delete' },
 
   // Settings
+  { resource: 'settings', action: 'list' },
   { resource: 'settings', action: 'view' },
   { resource: 'settings', action: 'update' },
 
   // Customer
+  { resource: 'customer', action: 'list' },
   { resource: 'customer', action: 'view' },
   { resource: 'customer', action: 'create' },
   { resource: 'customer', action: 'update' },
   { resource: 'customer', action: 'delete' },
 
   // Vendor
+  { resource: 'vendor', action: 'list' },
   { resource: 'vendor', action: 'view' },
   { resource: 'vendor', action: 'create' },
   { resource: 'vendor', action: 'update' },
   { resource: 'vendor', action: 'delete' },
 
   // Inventory
+  { resource: 'inventory', action: 'list' },
   { resource: 'inventory', action: 'view' },
   { resource: 'inventory', action: 'create' },
   { resource: 'inventory', action: 'update' },
@@ -60,24 +69,28 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { resource: 'inventory', action: 'adjust' },
 
   // Certified Diamond
+  { resource: 'certified-diamond', action: 'list' },
   { resource: 'certified-diamond', action: 'view' },
   { resource: 'certified-diamond', action: 'create' },
   { resource: 'certified-diamond', action: 'update' },
   { resource: 'certified-diamond', action: 'delete' },
 
   // Loose Diamond
+  { resource: 'loose-diamond', action: 'list' },
   { resource: 'loose-diamond', action: 'view' },
   { resource: 'loose-diamond', action: 'create' },
   { resource: 'loose-diamond', action: 'update' },
   { resource: 'loose-diamond', action: 'delete' },
 
   // Jewelry
+  { resource: 'jewelry', action: 'list' },
   { resource: 'jewelry', action: 'view' },
   { resource: 'jewelry', action: 'create' },
   { resource: 'jewelry', action: 'update' },
   { resource: 'jewelry', action: 'delete' },
 
   // Purchase
+  { resource: 'purchase', action: 'list' },
   { resource: 'purchase', action: 'view' },
   { resource: 'purchase', action: 'create' },
   { resource: 'purchase', action: 'update' },
@@ -86,6 +99,7 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { resource: 'purchase', action: 'receive' },
 
   // Sale
+  { resource: 'sale', action: 'list' },
   { resource: 'sale', action: 'view' },
   { resource: 'sale', action: 'create' },
   { resource: 'sale', action: 'update' },
@@ -94,44 +108,53 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { resource: 'sale', action: 'return' },
 
   // Memo
+  { resource: 'memo', action: 'list' },
   { resource: 'memo', action: 'view' },
   { resource: 'memo', action: 'create' },
   { resource: 'memo', action: 'return' },
   { resource: 'memo', action: 'convert' },
 
   // Hold
+  { resource: 'hold', action: 'list' },
   { resource: 'hold', action: 'view' },
   { resource: 'hold', action: 'create' },
   { resource: 'hold', action: 'release' },
 
   // Transfer
+  { resource: 'transfer', action: 'list' },
   { resource: 'transfer', action: 'view' },
   { resource: 'transfer', action: 'create' },
   { resource: 'transfer', action: 'receive' },
 
   // Manufacturing
+  { resource: 'manufacturing', action: 'list' },
   { resource: 'manufacturing', action: 'view' },
   { resource: 'manufacturing', action: 'create' },
   { resource: 'manufacturing', action: 'update' },
   { resource: 'manufacturing', action: 'complete' },
 
   // Accounting
+  { resource: 'accounting', action: 'list' },
   { resource: 'accounting', action: 'view' },
   { resource: 'accounting', action: 'create' },
   { resource: 'accounting', action: 'update' },
 
   // Payment
+  { resource: 'payment', action: 'list' },
   { resource: 'payment', action: 'view' },
   { resource: 'payment', action: 'create' },
 
   // Report
+  { resource: 'report', action: 'list' },
   { resource: 'report', action: 'view' },
   { resource: 'report', action: 'export' },
 
   // Audit
+  { resource: 'audit', action: 'list' },
   { resource: 'audit', action: 'view' },
 
   // Notification
+  { resource: 'notification', action: 'list' },
   { resource: 'notification', action: 'view' },
   { resource: 'notification', action: 'manage' },
 ];
@@ -142,7 +165,7 @@ export const BRANCH_ADMIN_PERMISSIONS: PermissionDefinition[] = PERMISSION_CATAL
   if (['branch', 'user', 'role', 'currency', 'sequence', 'settings', 'audit'].includes(p.resource)) {
     return false;
   }
-  if (p.resource === 'inventory' && p.action !== 'view') {
+  if (p.resource === 'inventory' && !['list', 'view'].includes(p.action)) {
     return false;
   }
   if (p.resource === 'purchase' && ['delete', 'approve'].includes(p.action)) {
@@ -151,16 +174,17 @@ export const BRANCH_ADMIN_PERMISSIONS: PermissionDefinition[] = PERMISSION_CATAL
   if (p.resource === 'sale' && ['delete', 'discount-approve'].includes(p.action)) {
     return false;
   }
-  if (p.resource === 'report' && p.action !== 'view') {
+  if (p.resource === 'report' && !['list', 'view'].includes(p.action)) {
     return false;
   }
-  if (p.resource === 'notification' && p.action !== 'view') {
+  if (p.resource === 'notification' && !['list', 'view'].includes(p.action)) {
     return false;
   }
   return true;
 });
 
-export async function syncPermissionCatalog(tx: Prisma.TransactionClient | PrismaClient) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function syncPermissionCatalog(tx: any) {
   for (const item of PERMISSION_CATALOG) {
     await tx.permission.upsert({
       where: {

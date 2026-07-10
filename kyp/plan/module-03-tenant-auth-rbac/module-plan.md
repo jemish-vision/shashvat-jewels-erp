@@ -1,6 +1,6 @@
 # Module 03 — Company Onboarding, Tenant Auth & RBAC
 
-Status: in-progress
+Status: completed (Company Admin RBAC, Branches, Sub-Admins fully implemented & verified)
 Depends on: Module 02 (Super Admin Platform Portal)
 Master: [../master-plan.md](../master-plan.md)
 

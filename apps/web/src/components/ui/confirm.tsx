@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, createContext, useContext, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import { MdClose, MdWarning, MdErrorOutline, MdInfoOutline } from 'react-icons/md';
 
@@ -97,47 +98,50 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   return (
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
-      {open && (
-        <div
-          onClick={handleCancel}
-          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-150"
-        >
+      {open &&
+        typeof document !== 'undefined' &&
+        createPortal(
           <div
-            onClick={(e) => e.stopPropagation()}
-            className="card-lg w-[400px] max-w-[92vw] px-5 py-[20px] shadow-2xl animate-in zoom-in-95 duration-150"
+            onClick={handleCancel}
+            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-150"
           >
-            <div className="mb-3.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {iconMap[variant]}
-                <h3 className="m-0 text-[15px] font-extrabold text-foreground">{title}</h3>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="card-lg w-[400px] max-w-[92vw] px-5 py-[20px] shadow-2xl animate-in zoom-in-95 duration-150"
+            >
+              <div className="mb-3.5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {iconMap[variant]}
+                  <h3 className="m-0 text-[15px] font-extrabold text-foreground">{title}</h3>
+                </div>
+                <button
+                  onClick={handleCancel}
+                  className="flex h-[26px] w-[26px] items-center justify-center rounded-[6px] border-none bg-none text-text-muted transition-colors hover:bg-muted hover:text-text-strong-2"
+                >
+                  <MdClose size={17} />
+                </button>
               </div>
-              <button
-                onClick={handleCancel}
-                className="flex h-[26px] w-[26px] items-center justify-center rounded-[6px] border-none bg-none text-text-muted transition-colors hover:bg-muted hover:text-text-strong-2"
-              >
-                <MdClose size={17} />
-              </button>
+              <p className="m-0 mb-6 text-[13px] font-medium leading-relaxed text-text-secondary">
+                {message}
+              </p>
+              <div className="flex items-center justify-end gap-2.5">
+                <button
+                  onClick={handleCancel}
+                  className="inline-flex items-center gap-1.5 rounded-[9px] border border-input bg-card px-4 py-[8px] text-[12px] font-bold text-text-strong-2 transition-colors hover:bg-muted"
+                >
+                  {cancelText}
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className={`inline-flex items-center gap-1.5 rounded-[9px] border-none px-4 py-[8px] text-[12px] font-bold transition-all ${buttonStyleMap[variant]}`}
+                >
+                  {confirmText}
+                </button>
+              </div>
             </div>
-            <p className="m-0 mb-6 text-[13px] font-medium leading-relaxed text-text-secondary">
-              {message}
-            </p>
-            <div className="flex items-center justify-end gap-2.5">
-              <button
-                onClick={handleCancel}
-                className="inline-flex items-center gap-1.5 rounded-[9px] border border-input bg-card px-4 py-[8px] text-[12px] font-bold text-text-strong-2 transition-colors hover:bg-muted"
-              >
-                {cancelText}
-              </button>
-              <button
-                onClick={handleConfirm}
-                className={`inline-flex items-center gap-1.5 rounded-[9px] border-none px-4 py-[8px] text-[12px] font-bold transition-all ${buttonStyleMap[variant]}`}
-              >
-                {confirmText}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </ConfirmContext.Provider>
   );
 }

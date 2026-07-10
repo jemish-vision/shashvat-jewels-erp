@@ -15,6 +15,20 @@ export function requirePermission(...permissions: string[]) {
   };
 }
 
+export function requireAnyPermission(...permissions: string[]) {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    const session = req.session;
+    if (!session) {
+      throw new PermissionError('Authentication required');
+    }
+    const hasAny = permissions.some((p) => session.permissions.includes(p));
+    if (!hasAny) {
+      throw new PermissionError('You do not have permission for this action');
+    }
+    next();
+  };
+}
+
 export function enforceBranchScope(
   session: { branchId?: string | null },
   requestedBranchId?: string | null

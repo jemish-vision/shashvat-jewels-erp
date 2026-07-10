@@ -119,7 +119,14 @@ Every physical/state stock change writes a row to `StockMovement` (scoped by `co
 
 `Decimal(14,2)` money, `Decimal(10,3)` carats, `Decimal(14,6)` exchange rates. Every financial document stores frozen `exchangeRate` + computed `baseTotal`.
 
-### 2.5 Documents follow a status machine + approval trail
+### 2.5 Strict 3-Layer Backend Architecture (Routes -> Controller -> Service)
+
+All Express API endpoints strictly enforce a 3-layer architecture with **zero inline logic in route files**:
+1. **Route Layer (`routes/`)**: Pure router mapping HTTP methods and middleware (`authenticate`, `requirePermission`, `requireSuperAdmin`) to controller handlers. Never contains inline request handlers or database queries.
+2. **Controller Layer (`controllers/`)**: Extracts HTTP request parameters (`req.params`, `req.body`, `req.query`, `req.companyId`), delegates to the corresponding Service layer, and formats standard JSON responses or forwards errors to `next(err)`.
+3. **Service Layer (`services/`)**: Executes 100% of the business rules, data transformation, multi-tenant database operations via Prisma (`tenantDb`), and transaction management.
+
+### 2.6 Documents follow a status machine + approval trail
 
 `DRAFT → PENDING_APPROVAL → APPROVED → ...` Approval columns (`approvedById`, `approvedAt`) on the document make the trail queryable.
 
