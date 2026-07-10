@@ -21,7 +21,7 @@ interface PermissionItem {
 
 const RESOURCE_LABELS: Record<string, string> = {
   branch: 'Branches & Showrooms',
-  user: 'Sub Admins & Staff Directory',
+  user: 'User Management',
   role: 'Security Roles & RBAC',
   currency: 'Multi-Currency & Forex',
   sequence: 'Numbering Sequences',

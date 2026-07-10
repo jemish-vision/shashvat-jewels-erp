@@ -2,7 +2,7 @@ import { getTenantClient } from '../db/tenant-extension.js';
 import { PERMISSION_CATALOG, syncPermissionCatalog } from '../lib/permissions.js';
 import { BusinessRuleError, NotFoundError } from '../lib/errors.js';
 
-function autoIncludeListPermissions(permissions: string[]): string[] {
+export function autoIncludeListPermissions(permissions: string[]): string[] {
   const set = new Set(permissions);
   for (const key of permissions) {
     const [res] = key.split(':');

@@ -102,7 +102,7 @@ export default function SubAdminsManagementPage() {
         setSelectedBranchId(res.branches[0].id);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load sub-admins directory');
+      setError(err instanceof Error ? err.message : 'Failed to load company users directory');
     } finally {
       setLoading(false);
     }
@@ -190,7 +190,7 @@ export default function SubAdminsManagementPage() {
         });
       }
       setIsModalOpen(false);
-      toast(editingMember ? 'Sub-admin updated successfully!' : 'Sub-admin created successfully!', 'success');
+      toast(editingMember ? 'Company user updated successfully!' : 'Company user created successfully!', 'success');
       await loadData();
     } catch (err: unknown) {
       toast(err instanceof Error ? err.message : 'Failed to save account', 'error');
@@ -213,19 +213,19 @@ export default function SubAdminsManagementPage() {
   }
 
   async function handleDelete(member: TeamMember) {
-    const ok = await confirm(`Are you sure you want to remove sub-admin "${member.name} (${member.email})"?`, {
-      title: 'Remove Sub-Admin Account',
+    const ok = await confirm(`Are you sure you want to remove company user "${member.name} (${member.email})"?`, {
+      title: 'Remove Company User Account',
       variant: 'danger',
-      confirmText: 'Remove Sub-Admin',
+      confirmText: 'Remove Company User',
       cancelText: 'Cancel',
     });
     if (!ok) return;
     try {
       await apiFetch(`/api/tenant/sub-admins/${member.id}`, { method: 'DELETE' });
-      toast('Sub-admin removed successfully!', 'success');
+      toast('Company user removed successfully!', 'success');
       await loadData();
     } catch (err: unknown) {
-      toast(err instanceof Error ? err.message : 'Failed to remove sub-admin', 'error');
+      toast(err instanceof Error ? err.message : 'Failed to remove company user', 'error');
     }
   }
 
@@ -242,7 +242,7 @@ export default function SubAdminsManagementPage() {
       <div className="flex min-h-[440px] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="h-9 w-9 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <span className="text-xs font-bold text-text-secondary">Loading Sub Admins Directory...</span>
+          <span className="text-xs font-bold text-text-secondary">Loading User Management Directory...</span>
         </div>
       </div>
     );
@@ -258,10 +258,10 @@ export default function SubAdminsManagementPage() {
           </div>
           <div>
             <h1 className="text-xl font-black tracking-tight text-foreground">
-              Sub-Admins & Staff Management
+              User Management
             </h1>
             <p className="text-xs font-medium text-text-secondary">
-              Provision workspace sub-admins, assign role profiles, and scope access to HQ or specific showrooms
+              Provision company users, assign role profiles, and scope access to HQ or specific showrooms
             </p>
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function SubAdminsManagementPage() {
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:brightness-110"
           >
             <MdAdd size={16} />
-            Add Sub-Admin
+            Add Company User
           </button>
         )}
       </div>
@@ -313,8 +313,8 @@ export default function SubAdminsManagementPage() {
             <CustomSelect
               width="210px"
               options={[
-                { value: 'ALL', label: 'All Sub-Admins & Staff' },
-                { value: 'SUB_ADMIN', label: 'Company HQ Sub-Admins Only' },
+                { value: 'ALL', label: 'All Company Users' },
+                { value: 'SUB_ADMIN', label: 'Company HQ Users Only' },
                 { value: 'BRANCH_ADMIN', label: 'Branch Administrators Only' },
               ]}
               value={scopeFilter}
@@ -338,7 +338,7 @@ export default function SubAdminsManagementPage() {
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-border bg-muted/50 text-[11px] font-extrabold uppercase tracking-wider text-text-secondary">
-              <th className="p-4">Sub-Admin / Email</th>
+              <th className="p-4">Company User / Email</th>
               <th className="p-4">Security Role Profile</th>
               <th className="p-4">Access Scope & Branch</th>
               <th className="p-4">Status</th>
@@ -387,7 +387,7 @@ export default function SubAdminsManagementPage() {
                           </>
                         ) : (
                           <>
-                            <MdSecurity size={12} /> Workspace Sub-Admin
+                            <MdSecurity size={12} /> Company User
                           </>
                         )}
                       </span>
@@ -418,7 +418,7 @@ export default function SubAdminsManagementPage() {
                         <button
                           type="button"
                           onClick={() => openEditModal(m)}
-                          title="Edit Sub-Admin"
+                          title="Edit Company User"
                           className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-text-secondary transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary"
                         >
                           <MdEdit size={14} />
@@ -428,7 +428,7 @@ export default function SubAdminsManagementPage() {
                         <button
                           type="button"
                           onClick={() => handleDelete(m)}
-                          title="Remove Sub-Admin"
+                          title="Remove Company User"
                           className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-text-secondary transition-colors hover:border-danger hover:bg-danger/10 hover:text-danger"
                         >
                           <MdDelete size={14} />
@@ -441,7 +441,7 @@ export default function SubAdminsManagementPage() {
             ) : (
               <tr>
                 <td colSpan={5} className="p-12 text-center text-text-secondary">
-                  No sub-admins found matching your criteria.
+                  No company users found matching your criteria.
                 </td>
               </tr>
             )}
@@ -470,7 +470,7 @@ export default function SubAdminsManagementPage() {
           <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <h3 className="text-base font-extrabold text-foreground">
-                {editingMember ? 'Edit Sub-Admin Account' : 'Provision New Sub-Admin'}
+                {editingMember ? 'Edit Company User Account' : 'Provision New Company User'}
               </h3>
               <button
                 type="button"
@@ -497,7 +497,7 @@ export default function SubAdminsManagementPage() {
                     }`}
                   >
                     <MdSecurity size={20} className="text-primary" />
-                    <span className="mt-1 text-xs">Company Sub-Admin</span>
+                    <span className="mt-1 text-xs">Company User</span>
                     <span className="text-[10px] text-text-muted">HQ & Entire Workspace</span>
                   </button>
 
@@ -613,7 +613,7 @@ export default function SubAdminsManagementPage() {
                   disabled={submitting || !name.trim()}
                   className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-white shadow-md hover:brightness-110"
                 >
-                  {submitting ? 'Saving...' : editingMember ? 'Update Sub-Admin' : 'Create Sub-Admin'}
+                  {submitting ? 'Saving...' : editingMember ? 'Update Company User' : 'Create Company User'}
                 </button>
               </div>
             </form>

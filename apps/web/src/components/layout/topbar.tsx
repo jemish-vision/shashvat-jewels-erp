@@ -43,19 +43,17 @@ export function Topbar() {
       </div>
 
       {/* Right side actions */}
-      <div className="flex items-center gap-[18px]">
-        {/* Branch selector */}
-        <div className="flex items-center gap-[14px] border-r border-border pr-[18px]">
-          <button className="flex items-center gap-[5px] border-none bg-none text-[12px] font-semibold text-text-secondary transition-colors duration-150 hover:text-primary">
-            <MdLocationOn size={16} />
-            Platform
-          </button>
+      <div className="flex items-center gap-4">
+        {/* Platform Chip */}
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 shadow-sm">
+          <MdLocationOn size={16} className="text-primary" />
+          <span className="text-xs font-semibold text-foreground">Platform HQ</span>
         </div>
 
         {/* Notification bell */}
-        <button className="relative flex rounded-lg p-[6px] text-text-secondary transition-colors duration-150 hover:bg-background">
+        <button className="relative flex rounded-lg p-2 text-text-secondary transition-colors duration-150 hover:bg-background">
           <MdNotifications size={20} />
-          <span className="absolute right-[6px] top-[6px] h-[7px] w-[7px] rounded-full border-[1.5px] border-white bg-danger" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border border-white bg-primary dark:border-card" />
         </button>
 
         {/* User avatar dropdown */}

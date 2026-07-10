@@ -51,7 +51,7 @@ const RESOURCE_LABELS: Record<string, string> = {
   report: 'Reports',
   role: 'Roles & Permissions',
   branch: 'Branch Management',
-  user: 'Sub Admins',
+  user: 'User Management',
   notification: 'Notifications',
 };
 

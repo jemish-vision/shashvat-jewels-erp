@@ -48,6 +48,18 @@ Shashvat Jewels is a state-of-the-art, multi-tenant enterprise resource planning
   - **Permission-Filtered Sidebar**: Navigation menu items (`tenantNav`) are dynamically filtered based on logged-in user permissions.
   - **Branch Switcher Chip**: Indicates company-wide (`HQ`) vs. branch-scoped environment.
 
+### 5. Access & Governance — Roles, Branches & User Management (`Module 04`)
+- **Showrooms & Branch Directory (`/dashboard/branches`)**:
+  - Provision and govern physical showrooms and branch locations with instant active/suspended status toggles.
+  - Automatic exclusion of `HQ` from branch selection lists while maintaining HQ administrative supervision across all branches.
+- **Granular Roles & Permission Matrix (`/dashboard/roles`, `/dashboard/roles/[id]`)**:
+  - Interactive tabular Permission Matrix aligned with tenant sidebar module names (`Overview`, `Access & Governance`, `Diamond & Jewelry Catalog`, `Sales & CRM`, etc.).
+  - **Automatic List Permission Granting (`autoIncludeListPermissions`)**: Assigning `create`, `update`, `delete`, or `view` on any resource automatically grants the corresponding `list` permission, ensuring consistent UI data access.
+  - **Read-Only Matrix Protection**: Staff members with view-only permissions see a prominent **Read-Only** badge, hidden mutation buttons (`Toggle All Filtered`, `Edit Role`, `Delete Role`, `Save Permissions`), and disabled checkboxes.
+- **User Management (`/dashboard/sub-admins`)**:
+  - Provision company users assigned to specific Role Profiles and scoped to Headquarters or individual showrooms.
+  - **RBAC UI & Backend Enforcement**: Frontend UI dynamically hides action controls (`Add Company User`, `Edit`, `Delete`, status toggles) via `usePermissions()`, while backend routes strictly enforce `requirePermission` and flexible `requireAnyPermission` middleware.
+
 ## Local Development Setup
 
 1. **Install Dependencies**:

@@ -2045,6 +2045,14 @@ Branch Admin **cannot**:
 
 Enforcement: `branchId` in the JWT is applied as a mandatory filter by the backend on every branch-scoped query (same pattern as `companyId` tenant scoping). The frontend hides other branches, but the API is the security boundary.
 
+### 18.3 Granular Access Control & List Permission Synchronization
+
+- **Granular Action Matrix**: Each module resource (`role`, `branch`, `user`, `customer`, `certified-diamond`, `sale`, etc.) supports granular actions (`list`, `view`, `create`, `update`, `delete`).
+- **Automatic `list` Permission Synchronization (`autoIncludeListPermissions`)**: When a role is assigned any action (`create`, `update`, `delete`, or `view`) on a resource, the backend automatically attaches `resource:list`. This guarantees that sub-admins and staff members with mutation or view permissions can navigate to and list data in the UI without requiring administrators to manually check `list` checkboxes.
+- **Frontend & Backend Gatekeeping**:
+  - **Frontend (`usePermissions()`)**: Dynamically hides create buttons, edit modals, delete icons, and disables interactive form controls/checkboxes when the logged-in user lacks `create`, `update`, or `delete` permissions.
+  - **Backend (`requirePermission` & `requireAnyPermission`)**: Enforces strict endpoint validation. Reading single or list views allows users with either `list` or `view` (`requireAnyPermission`), while mutation endpoints (`POST`, `PUT`, `DELETE`) enforce exact action permissions (`requirePermission`).
+
 ---
 
 ## 19. Frontend UX & Visibility Rules

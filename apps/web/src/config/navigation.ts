@@ -72,8 +72,8 @@ export const tenantNav: NavGroup[] = [
     label: 'Access & Governance',
     items: [
       { label: 'Roles & Permissions', href: '/dashboard/roles', icon: 'security', permission: 'role:view' },
-      // { label: 'Branch Management', href: '/dashboard/branches', icon: 'store', permission: 'branch:view' },
-      { label: 'Sub Admins', href: '/dashboard/sub-admins', icon: 'people', permission: 'user:view' },
+      { label: 'Branch Management', href: '/dashboard/branches', icon: 'store', permission: 'branch:view' },
+      { label: 'User Management', href: '/dashboard/sub-admins', icon: 'people', permission: 'user:view' },
       { label: 'Notifications', href: '/dashboard/notifications', icon: 'notifications', permission: 'notification:view' },
     ],
   },
