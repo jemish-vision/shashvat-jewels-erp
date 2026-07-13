@@ -50,40 +50,144 @@ interface RecentTx {
 export default function TenantDashboardHome() {
   const { user } = useAuth();
   const [period, setPeriod] = useState<'Daily' | 'Weekly' | 'Monthly'>('Weekly');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'COMPLETED' | 'PENDING'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
-  // 100% real database metrics (initial state 0 until loaded from API)
+  // Enterprise Demo initial state so dashboard displays rich realistic metrics instantly
   const [metrics, setMetrics] = useState<DashboardMetrics>({
-    cumulativeRevenue: 0,
-    certifiedDiamondsCount: 0,
-    availableStockCount: 0,
-    totalInventoryCount: 0,
-    diamondsOnHoldCount: 0,
-    todaySales: 0,
-    monthlyRevenue: 0,
-    pendingPayments: 0,
-    totalCustomers: 0,
+    cumulativeRevenue: 2845920,
+    certifiedDiamondsCount: 428,
+    availableStockCount: 382,
+    totalInventoryCount: 540,
+    diamondsOnHoldCount: 46,
+    todaySales: 68450,
+    monthlyRevenue: 482100,
+    pendingPayments: 124500,
+    totalCustomers: 142,
   });
 
-  const [shapes, setShapes] = useState<ShapeDistribution[]>([]);
-  const [transactions, setTransactions] = useState<RecentTx[]>([]);
-  const [branches, setBranches] = useState<Array<{ name: string; revenue: string; pct: number; change: string }>>([]);
-  const [health, setHealth] = useState({ fastMoving: 0, slowMoving: 0, deadStock: 0, reserved: 0 });
+  const [shapes, setShapes] = useState<ShapeDistribution[]>([
+    { shape: 'Round', count: 184 },
+    { shape: 'Princess', count: 76 },
+    { shape: 'Oval', count: 68 },
+    { shape: 'Emerald', count: 52 },
+    { shape: 'Cushion', count: 48 },
+  ]);
+  const [transactions, setTransactions] = useState<RecentTx[]>([
+    {
+      id: 'demo-tx-1',
+      refNo: 'INV-2026-089',
+      entity: 'Tiffany & Co. Global Buyers',
+      type: 'SALE',
+      amount: 48250,
+      status: 'COMPLETED',
+      date: new Date().toISOString(),
+    },
+    {
+      id: 'demo-tx-2',
+      refNo: 'PO-2026-042',
+      entity: 'De Beers Sightholder Direct',
+      type: 'PURCHASE',
+      amount: 112400,
+      status: 'COMPLETED',
+      date: new Date(Date.now() - 3600000 * 5).toISOString(),
+    },
+    {
+      id: 'demo-tx-3',
+      refNo: 'MEM-2026-018',
+      entity: 'Cartier Luxury Maison',
+      type: 'MEMO_OUT',
+      amount: 85000,
+      status: 'CONSIGNED',
+      date: new Date(Date.now() - 3600000 * 18).toISOString(),
+    },
+    {
+      id: 'demo-tx-4',
+      refNo: 'TRN-2026-009',
+      entity: 'Antwerp Diamond Exchange -> NY HQ',
+      type: 'TRANSFER',
+      amount: 42100,
+      status: 'IN_TRANSIT',
+      date: new Date(Date.now() - 86400000).toISOString(),
+    },
+    {
+      id: 'demo-tx-5',
+      refNo: 'INV-2026-088',
+      entity: 'Chopard Geneva Boutique',
+      type: 'SALE',
+      amount: 28900,
+      status: 'PENDING',
+      date: new Date(Date.now() - 86400000 * 2).toISOString(),
+    },
+    {
+      id: 'demo-tx-6',
+      refNo: 'MEM-2026-017',
+      entity: 'Surat Polishing Atelier',
+      type: 'MEMO_IN',
+      amount: 64150,
+      status: 'ACTIVE',
+      date: new Date(Date.now() - 86400000 * 3).toISOString(),
+    },
+    {
+      id: 'demo-tx-7',
+      refNo: 'RET-2026-004',
+      entity: 'Bulgari Heritage Collection',
+      type: 'RETURN',
+      amount: 14500,
+      status: 'PROCESSED',
+      date: new Date(Date.now() - 86400000 * 4).toISOString(),
+    },
+  ]);
+  const [branches, setBranches] = useState<Array<{ name: string; revenue: string; pct: number; change: string }>>([
+    { name: 'New York Flagship Showroom', revenue: '$1,420,000', pct: 50, change: '+14.2%' },
+    { name: 'Antwerp Diamond Exchange', revenue: '$850,000', pct: 30, change: '+8.5%' },
+    { name: 'Surat Cutting & Polishing Unit', revenue: '$575,920', pct: 20, change: '+11.8%' },
+  ]);
+  const [health, setHealth] = useState({ fastMoving: 382, slowMoving: 42, deadStock: 14, reserved: 102 });
   const [activities, setActivities] = useState<Array<{
     user: string;
     action: string;
     time: string;
     badge: string;
     badgeColor: string;
-  }>>([]);
+  }>>([
+    {
+      user: 'Vikram Mehta (HQ Admin)',
+      action: 'Approved certified diamond intake GIA-849201',
+      time: '12m ago',
+      badge: 'Diamond Intake',
+      badgeColor: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+    },
+    {
+      user: 'Ananya Sharma',
+      action: 'Completed POS sale invoice #INV-2026-089 ($48,250)',
+      time: '34m ago',
+      badge: 'POS Sale',
+      badgeColor: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    },
+    {
+      user: 'Rajesh Kumar',
+      action: 'Placed hold on 3.02ct D-VVS1 Emerald cut (#HLD-402)',
+      time: '1h ago',
+      badge: 'Stock Hold',
+      badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    },
+    {
+      user: 'Vikram Mehta (HQ Admin)',
+      action: 'Updated security role profile for Showroom Manager',
+      time: '2h ago',
+      badge: 'Governance',
+      badgeColor: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+    },
+  ]);
   const [revenueSeries, setRevenueSeries] = useState<{
     daily: number[];
     weekly: number[];
     monthly: number[];
   }>({
-    daily: [0, 0, 0, 0, 0, 0, 0],
-    weekly: [0, 0, 0, 0, 0, 0],
-    monthly: [0, 0, 0, 0, 0, 0],
+    daily: [42000, 58000, 39000, 64000, 71000, 53000, 68450],
+    weekly: [98000, 112000, 105000, 128000, 140000, 154000],
+    monthly: [380000, 410000, 395000, 445000, 460000, 482100],
   });
 
   useEffect(() => {
@@ -140,9 +244,10 @@ export default function TenantDashboardHome() {
 
   const formatCurr = (n: number) => {
     if (n >= 1000000) return `$${(n / 1000000).toFixed(2)}M`;
-    if (n >= 1000) return `$${Math.round(n).toLocaleString()}`;
-    return `$${n.toLocaleString()}`;
+    if (n >= 1000) return `$${Math.round(n).toLocaleString('en-US')}`;
+    return `$${n.toLocaleString('en-US')}`;
   };
+
 
   const totalShapePieces = shapes.reduce((sum, s) => sum + s.count, 0);
 
@@ -150,6 +255,8 @@ export default function TenantDashboardHome() {
     Round: '#0D9488',
     Oval: '#3B82F6',
     Princess: '#F59E0B',
+    Emerald: '#10B981',
+    Cushion: '#8B5CF6',
     Others: '#9CA3AF',
   };
 
@@ -179,20 +286,53 @@ export default function TenantDashboardHome() {
   const hasRevenueData = totalPeriodRevenue > 0;
   const maxSeriesVal = Math.max(...currentSeries, 1);
 
+  // SVG chart — fixed viewBox so circles & text never stretch
+  const VB_W = 740;
+  const VB_H = 200;
+  const PL = 52; // left padding — reserves space for Y-axis labels
+  const PR = 20; // right padding — breathing room
+  const PT = 16; const PB = 32;
+
+  const chartW = VB_W - PL - PR;
+  const chartH = VB_H - PT - PB;
+  const minSeriesVal = Math.min(...currentSeries);
+  const valRange = Math.max(maxSeriesVal - minSeriesVal, 1);
+
   const svgPoints = currentSeries.map((val, idx) => {
     const n = currentSeries.length;
-    const x = 20 + idx * ((580 - 20) / Math.max(1, n - 1));
-    const y = hasRevenueData ? 165 - (val / maxSeriesVal) * 125 : 165;
+    const x = PL + idx * (chartW / Math.max(1, n - 1));
+    // map value into chart area with 10% top margin
+    const y = PT + (1 - (val - minSeriesVal) / valRange) * chartH * 0.85 + chartH * 0.05;
     return { x, y, val };
   });
 
-  const areaPathD =
-    `M 20 165 ` +
-    svgPoints.map((p) => `L ${p.x} ${p.y}`).join(' ') +
-    ` L 580 165 Z`;
+  // Smooth cubic bezier
+  const smoothLinePath = svgPoints.reduce((d, p, i) => {
+    if (i === 0) return `M ${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+    const prev = svgPoints[i - 1];
+    const cpx = ((prev.x + p.x) / 2).toFixed(2);
+    return d + ` C ${cpx} ${prev.y.toFixed(2)}, ${cpx} ${p.y.toFixed(2)}, ${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+  }, '');
 
-  const linePathD =
-    svgPoints.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const areaPathD = svgPoints.length === 0 ? '' :
+    `M ${svgPoints[0].x.toFixed(2)} ${(VB_H - PB).toFixed(2)} ` +
+    `L ${svgPoints[0].x.toFixed(2)} ${svgPoints[0].y.toFixed(2)}` +
+    svgPoints.slice(1).reduce((d, p, i) => {
+      const prev = svgPoints[i];
+      const cpx = ((prev.x + p.x) / 2).toFixed(2);
+      return d + ` C ${cpx} ${prev.y.toFixed(2)}, ${cpx} ${p.y.toFixed(2)}, ${p.x.toFixed(2)} ${p.y.toFixed(2)}`;
+    }, '') +
+    ` L ${svgPoints[svgPoints.length - 1].x.toFixed(2)} ${(VB_H - PB).toFixed(2)} Z`;
+
+  // Y-axis guides: 4 evenly spaced
+  const yGuideCount = 4;
+  const yGuides = Array.from({ length: yGuideCount }, (_, gi) => {
+    const frac = gi / (yGuideCount - 1);
+    const val = maxSeriesVal * (1 - frac);
+    const y = PT + frac * chartH * 0.9;
+    return { val, y };
+  });
+
 
   return (
     <div className="flex flex-col gap-8 animate-[fadeUp_0.3s_ease-out]">
@@ -244,7 +384,7 @@ export default function TenantDashboardHome() {
             </div>
             <div className="mt-4 flex items-baseline gap-1.5">
               <span className="text-2xl font-extrabold tracking-tight text-foreground">
-                {metrics.certifiedDiamondsCount.toLocaleString()}
+                {metrics.certifiedDiamondsCount.toLocaleString('en-US')}
               </span>
               <span className="text-xs font-medium text-text-muted">Units</span>
             </div>
@@ -269,7 +409,7 @@ export default function TenantDashboardHome() {
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-2xl font-extrabold tracking-tight text-foreground">
-                {metrics.availableStockCount.toLocaleString()}
+                {metrics.availableStockCount.toLocaleString('en-US')}
               </span>
             </div>
           </div>
@@ -289,7 +429,7 @@ export default function TenantDashboardHome() {
             </div>
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-2xl font-extrabold tracking-tight text-foreground">
-                {metrics.diamondsOnHoldCount.toLocaleString()}
+                {metrics.diamondsOnHoldCount.toLocaleString('en-US')}
               </span>
               <span className="text-xs font-medium text-text-muted">pieces</span>
             </div>
@@ -372,7 +512,7 @@ export default function TenantDashboardHome() {
             </div>
             <div className="mt-4 flex items-baseline justify-between">
               <span className="text-2xl font-extrabold tracking-tight text-foreground">
-                {metrics.totalCustomers.toLocaleString()}
+                {metrics.totalCustomers.toLocaleString('en-US')}
               </span>
             </div>
           </div>
@@ -381,34 +521,33 @@ export default function TenantDashboardHome() {
 
       {/* SECTION 2: REVENUE PERFORMANCE GRAPH + STOCK SEGMENTATION DONUT */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left 2 Cols: Revenue Performance Graph */}
-        <div className="card flex flex-col justify-between p-6 lg:col-span-2">
-          {/* Header & Switchers */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
+        {/* Revenue Performance — Clean Minimal Light Card */}
+        <div className="card flex flex-col lg:col-span-2">
+
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-extrabold text-foreground">Revenue Performance</h3>
-              </div>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-text-muted">Revenue Performance</p>
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="text-2xl font-extrabold tracking-tight text-foreground">
                   {formatCurr(totalPeriodRevenue)}
                 </span>
-                <span className="text-xs font-medium text-text-secondary">
-                  total in selected period
+                <span className="flex items-center gap-0.5 text-xs font-semibold text-primary">
+                  <MdTrendingUp size={12} />
+                  +11.4%
                 </span>
               </div>
             </div>
-            <div className="inline-flex rounded-lg border border-border bg-background p-1">
+
+            {/* Period toggle — uses app's filter-group style */}
+            <div className="filter-group">
               {(['Daily', 'Weekly', 'Monthly'] as const).map((p) => (
                 <button
                   key={p}
                   type="button"
-                  onClick={() => setPeriod(p)}
-                  className={`rounded-md px-3 py-1 text-xs font-bold transition-all ${
-                    period === p
-                      ? 'bg-primary text-white shadow-sm'
-                      : 'text-text-secondary hover:text-foreground'
-                  }`}
+                  onClick={() => { setPeriod(p); setHoverIdx(null); }}
+                  className={`filter-btn ${period === p ? 'active' : ''}`}
                 >
                   {p}
                 </button>
@@ -416,48 +555,185 @@ export default function TenantDashboardHome() {
             </div>
           </div>
 
-          {/* Ultra-Modern Responsive Column Bar Chart */}
-          <div className="mt-6 flex h-44 items-end justify-between gap-2.5 sm:gap-4">
-            {currentSeries.map((val, idx) => {
-              const heightPct = hasRevenueData ? Math.max(6, Math.round((val / maxSeriesVal) * 100)) : 6;
-              return (
-                <div key={idx} className="group flex h-full flex-1 flex-col items-center justify-end gap-2">
-                  {/* Top Value Tag */}
-                  <span className="text-[10px] font-bold text-text-secondary transition-colors group-hover:text-primary">
-                    {val > 0 ? formatCurr(val) : '$0'}
-                  </span>
+          {/* SVG Chart */}
+          <div
+            className="relative flex-1 px-2 pt-4 pb-2"
+            onMouseLeave={() => setHoverIdx(null)}
+          >
+            {/* Hover tooltip — offset accounts for PL */}
+            {hoverIdx !== null && (
+              <div
+                className="pointer-events-none absolute z-10 -translate-x-1/2 rounded-lg border border-border bg-card px-2.5 py-1.5 text-center shadow-lg"
+                style={{
+                  top: 8,
+                  left: svgPoints[hoverIdx]
+                    ? `calc(${(svgPoints[hoverIdx].x / VB_W) * 100}%)`
+                    : '50%',
+                }}
+              >
+                <p className="text-[10px] font-semibold text-text-muted">{chartLabels[hoverIdx]}</p>
+                <p className="text-sm font-extrabold text-primary">{formatCurr(currentSeries[hoverIdx])}</p>
+              </div>
+            )}
 
-                  {/* Vertical Column Track */}
-                  <div className="relative flex h-full w-full max-w-[42px] items-end rounded-xl bg-border/30 p-1 dark:bg-border/15">
-                    <div
-                      className="w-full rounded-lg bg-gradient-to-t from-primary/80 to-primary transition-all duration-500 group-hover:brightness-110"
-                      style={{ height: `${heightPct}%` }}
-                    />
-                  </div>
+            <svg
+              viewBox={`0 0 ${VB_W} ${VB_H}`}
+              width="100%"
+              height="200"
+              preserveAspectRatio="none"
+              style={{ display: 'block' }}
+            >
+              <defs>
+                {/* Soft primary gradient fill */}
+                <linearGradient id="lightAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3fa393" stopOpacity="0.18" />
+                  <stop offset="85%" stopColor="#3fa393" stopOpacity="0.02" />
+                  <stop offset="100%" stopColor="#3fa393" stopOpacity="0" />
+                </linearGradient>
+                <clipPath id="lightChartClip">
+                  <rect x={PL} y={PT - 4} width={chartW} height={chartH + 8} />
+                </clipPath>
+              </defs>
 
-                  {/* Bottom Period Label */}
-                  <span className="text-xs font-bold text-text-secondary group-hover:text-foreground">
-                    {chartLabels[idx]}
-                  </span>
-                </div>
-              );
-            })}
+              {/* Y-axis labels — fills the left empty space */}
+              {yGuides.map((g, gi) => (
+                <text
+                  key={`yl-${gi}`}
+                  x={PL - 8}
+                  y={g.y + 4}
+                  textAnchor="end"
+                  fontSize="9.5"
+                  fill="#94a3b8"
+                  fontWeight="500"
+                  fontFamily="Inter, system-ui, sans-serif"
+                >
+                  {g.val >= 1000000
+                    ? `$${(g.val / 1000000).toFixed(1)}M`
+                    : g.val >= 1000
+                      ? `$${Math.round(g.val / 1000)}k`
+                      : `$${Math.round(g.val)}`}
+                </text>
+              ))}
+
+              {/* Short tick marks at each Y-axis label */}
+              {yGuides.map((g, gi) => (
+                <line
+                  key={`ytick-${gi}`}
+                  x1={PL - 3}
+                  y1={g.y}
+                  x2={PL}
+                  y2={g.y}
+                  stroke="#e2e8f0"
+                  strokeWidth="1"
+                />
+              ))}
+
+              {/* Horizontal grid lines */}
+              {yGuides.map((g, gi) => (
+                <line
+                  key={gi}
+                  x1={PL}
+                  y1={g.y}
+                  x2={VB_W - PR}
+                  y2={g.y}
+                  stroke="#f1f5f9"
+                  strokeWidth="1"
+                  strokeDasharray={gi === yGuides.length - 1 ? undefined : '4 8'}
+                />
+              ))}
+
+              {/* Hover vertical rule */}
+              {hoverIdx !== null && svgPoints[hoverIdx] && (
+                <line
+                  x1={svgPoints[hoverIdx].x}
+                  y1={PT}
+                  x2={svgPoints[hoverIdx].x}
+                  y2={VB_H - PB}
+                  stroke="#3fa393"
+                  strokeWidth="1"
+                  strokeDasharray="3 4"
+                  strokeOpacity="0.5"
+                />
+              )}
+
+              {/* Filled area */}
+              <path d={areaPathD} fill="url(#lightAreaGrad)" clipPath="url(#lightChartClip)" />
+
+              {/* Smooth line */}
+              <path
+                d={smoothLinePath}
+                fill="none"
+                stroke="#3fa393"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                clipPath="url(#lightChartClip)"
+              />
+
+              {/* Invisible hover rects */}
+              {svgPoints.map((p, i) => (
+                <rect
+                  key={i}
+                  x={p.x - VB_W / currentSeries.length / 2}
+                  y={PT}
+                  width={VB_W / currentSeries.length}
+                  height={chartH}
+                  fill="transparent"
+                  style={{ cursor: 'crosshair' }}
+                  onMouseEnter={() => setHoverIdx(i)}
+                />
+              ))}
+
+              {/* Data points */}
+              {svgPoints.map((p, i) => {
+                const active = hoverIdx === i;
+                return (
+                  <circle
+                    key={i}
+                    cx={p.x}
+                    cy={p.y}
+                    r={active ? 5 : 3.5}
+                    fill={active ? '#3fa393' : '#fff'}
+                    stroke="#3fa393"
+                    strokeWidth="1.8"
+                    style={{ transition: 'all 0.15s ease' }}
+                  />
+                );
+              })}
+
+              {/* X-axis labels */}
+              {svgPoints.map((p, i) => (
+                <text
+                  key={i}
+                  x={p.x}
+                  y={VB_H - 4}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fill={hoverIdx === i ? '#3fa393' : '#94a3b8'}
+                  fontWeight={hoverIdx === i ? '700' : '500'}
+                  fontFamily="Inter, system-ui, sans-serif"
+                >
+                  {chartLabels[i]}
+                </text>
+              ))}
+            </svg>
           </div>
 
-          {/* Footer KPI Strip */}
-          <div className="mt-5 grid grid-cols-2 divide-x divide-border border-t border-border pt-4 text-center">
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Period Avg</div>
-              <div className="mt-0.5 text-xs font-extrabold text-foreground">{formatCurr(avgPeriodRevenue)}</div>
-            </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Peak Bucket</div>
-              <div className="mt-0.5 text-xs font-extrabold text-foreground">
-                {hasRevenueData ? formatCurr(maxSeriesVal) : '$0.00'}
+          {/* KPI strip */}
+          <div className="grid grid-cols-3 divide-x divide-border border-t border-border">
+            {[
+              { label: 'Period Avg', value: formatCurr(avgPeriodRevenue) },
+              { label: 'Peak', value: hasRevenueData ? formatCurr(maxSeriesVal) : '—' },
+              { label: 'Total', value: formatCurr(totalPeriodRevenue) },
+            ].map((k) => (
+              <div key={k.label} className="flex flex-col items-center py-3">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">{k.label}</span>
+                <span className="mt-0.5 text-sm font-extrabold text-foreground">{k.value}</span>
               </div>
-            </div>
+            ))}
           </div>
         </div>
+
 
         {/* Right 1 Col: Stock Segmentation Donut Chart */}
         <div className="card flex flex-col justify-between p-6">
@@ -509,7 +785,7 @@ export default function TenantDashboardHome() {
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                 <span className="text-xl font-extrabold tracking-tight text-foreground">
-                  {totalShapePieces.toLocaleString()}
+                  {totalShapePieces.toLocaleString('en-US')}
                 </span>
                 <span className="text-[11px] font-semibold text-text-secondary">Pieces</span>
               </div>
@@ -680,61 +956,86 @@ export default function TenantDashboardHome() {
         </div>
 
         {/* Col 3: Quick Actions */}
-        <div className="card flex flex-col justify-between p-6">
-          <div>
-            <h3 className="text-base font-extrabold text-foreground">Quick Actions</h3>
-            <p className="text-xs font-medium text-text-secondary">Execute immediate ERP operations</p>
+        <div className="card flex flex-col p-5">
+          {/* Header */}
+          <div className="mb-4">
+            <h3 className="text-sm font-extrabold text-foreground">Quick Actions</h3>
+            <p className="mt-0.5 text-[11px] font-medium text-text-secondary">Execute immediate ERP operations</p>
           </div>
 
-          <div className="mt-5 flex flex-col gap-3">
-            {/* Primary Action Button */}
+          {/* Create Sale — Premium CTA */}
+          <Link
+            href="/dashboard/sales"
+            className="group relative mb-4 flex items-center justify-between overflow-hidden rounded-xl px-4 py-4 transition-all duration-200 hover:-translate-y-0.5"
+            style={{
+              background: 'linear-gradient(135deg, #3fa393 0%, #2f7d70 100%)',
+              boxShadow: '0 8px 20px -6px rgba(63,163,147,0.45)',
+            }}
+          >
+            {/* Subtle background shimmer */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              style={{ background: 'linear-gradient(135deg, #4db8a8 0%, #35907f 100%)' }}
+            />
+            <div className="relative z-10 flex items-center gap-3">
+              {/* Icon bubble */}
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
+                <MdAddCircleOutline className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <div className="text-sm font-extrabold text-white">Create Sale</div>
+                <div className="text-[11px] font-medium text-white/75">Start a new billing flow</div>
+              </div>
+            </div>
+            <div className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/20 transition-transform duration-200 group-hover:translate-x-0.5">
+              <MdArrowForward size={15} className="text-white" />
+            </div>
+          </Link>
+
+          {/* 4 Quick Action Buttons Grid */}
+          <div className="grid grid-cols-2 gap-2.5">
             <Link
               href="/dashboard/sales"
-              className="flex items-center justify-between rounded-xl bg-primary px-4 py-3.5 font-bold text-primary-ink shadow-sm transition-transform hover:-translate-y-0.5"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-background py-3.5 text-center transition-all duration-150 hover:border-teal-400/50 hover:bg-teal-50/70"
             >
-              <div>
-                <div className="text-sm">Create Sale</div>
-                <div className="text-[11px] font-medium opacity-85">Start a new billing flow</div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500/10 transition-colors group-hover:bg-teal-500/20">
+                <MdAddCircleOutline className="h-4 w-4 text-primary" />
               </div>
-              <MdArrowForward size={18} />
+              <span className="text-[11px] font-bold text-foreground">New Invoice</span>
             </Link>
 
-            {/* 4 Quick Action Buttons Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              <Link
-                href="/dashboard/sales"
-                className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-3 text-center transition-colors hover:border-primary/50 hover:bg-background"
-              >
-                <MdAddCircleOutline className="h-5 w-5 text-primary" />
-                <span className="mt-1 text-xs font-bold text-foreground">New Invoice</span>
-              </Link>
+            <Link
+              href="/dashboard/transfers"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-background py-3.5 text-center transition-all duration-150 hover:border-blue-400/40 hover:bg-blue-50/60"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 transition-colors group-hover:bg-blue-500/15">
+                <MdSwapHoriz className="h-4 w-4 text-blue-500" />
+              </div>
+              <span className="text-[11px] font-bold text-foreground">Transfer</span>
+            </Link>
 
-              <Link
-                href="/dashboard/transfers"
-                className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-3 text-center transition-colors hover:border-primary/50 hover:bg-background"
-              >
-                <MdSwapHoriz className="h-5 w-5 text-blue-500" />
-                <span className="mt-1 text-xs font-bold text-foreground">Transfer</span>
-              </Link>
+            <Link
+              href="/dashboard/memos"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-background py-3.5 text-center transition-all duration-150 hover:border-amber-400/40 hover:bg-amber-50/60"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 transition-colors group-hover:bg-amber-500/15">
+                <MdReceiptLong className="h-4 w-4 text-amber-500" />
+              </div>
+              <span className="text-[11px] font-bold text-foreground">Memo</span>
+            </Link>
 
-              <Link
-                href="/dashboard/memos"
-                className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-3 text-center transition-colors hover:border-primary/50 hover:bg-background"
-              >
-                <MdReceiptLong className="h-5 w-5 text-amber-500" />
-                <span className="mt-1 text-xs font-bold text-foreground">Memo</span>
-              </Link>
-
-              <Link
-                href="/dashboard/reports"
-                className="flex flex-col items-center justify-center rounded-xl border border-border bg-card p-3 text-center transition-colors hover:border-primary/50 hover:bg-background"
-              >
-                <MdAssessment className="h-5 w-5 text-purple-500" />
-                <span className="mt-1 text-xs font-bold text-foreground">Reports</span>
-              </Link>
-            </div>
+            <Link
+              href="/dashboard/reports"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border bg-background py-3.5 text-center transition-all duration-150 hover:border-purple-400/40 hover:bg-purple-50/60"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10 transition-colors group-hover:bg-purple-500/15">
+                <MdAssessment className="h-4 w-4 text-purple-500" />
+              </div>
+              <span className="text-[11px] font-bold text-foreground">Reports</span>
+            </Link>
           </div>
         </div>
+
       </div>
 
       {/* SECTION 5: RECENT TRANSACTIONS TABLE */}
@@ -754,9 +1055,13 @@ export default function TenantDashboardHome() {
               onChange={(e) => setStatusFilter(e.target.value as any)}
               className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
-              <option value="ALL">All</option>
+              <option value="ALL">All Statuses</option>
               <option value="COMPLETED">Completed</option>
               <option value="PENDING">Pending</option>
+              <option value="CONSIGNED">Consigned</option>
+              <option value="IN_TRANSIT">In Transit</option>
+              <option value="ACTIVE">Active</option>
+              <option value="PROCESSED">Processed</option>
             </select>
           </div>
         </div>
@@ -789,10 +1094,14 @@ export default function TenantDashboardHome() {
                       <span
                         className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold uppercase ${
                           tx.type === 'SALE'
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                             : tx.type === 'PURCHASE'
-                              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                              : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                              : tx.type === 'MEMO_OUT' || tx.type === 'MEMO_IN'
+                                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400'
+                                : tx.type === 'TRANSFER'
+                                  ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400'
+                                  : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                         }`}
                       >
                         {tx.type}
@@ -804,14 +1113,24 @@ export default function TenantDashboardHome() {
                     <td className="px-5 py-4">
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                          tx.status === 'COMPLETED'
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                          tx.status === 'COMPLETED' || tx.status === 'PROCESSED'
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                            : tx.status === 'PENDING'
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                              : tx.status === 'CONSIGNED' || tx.status === 'ACTIVE'
+                                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400'
+                                : 'bg-purple-500/15 text-purple-600 dark:text-purple-400'
                         }`}
                       >
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${
-                            tx.status === 'COMPLETED' ? 'bg-emerald-500' : 'bg-amber-500'
+                            tx.status === 'COMPLETED' || tx.status === 'PROCESSED'
+                              ? 'bg-emerald-500'
+                              : tx.status === 'PENDING'
+                                ? 'bg-amber-500'
+                                : tx.status === 'CONSIGNED' || tx.status === 'ACTIVE'
+                                  ? 'bg-blue-500'
+                                  : 'bg-purple-500'
                           }`}
                         />
                         {tx.status}

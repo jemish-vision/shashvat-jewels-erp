@@ -4,19 +4,20 @@ import { useState, type FormEvent, use, Suspense } from 'react';
 import Link from 'next/link';
 import { site } from '@/config/site';
 import { apiFetch, ApiError } from '@/lib/api-client';
+import { useToast } from '@/components/ui/toast';
+
 
 function ForgotPasswordForm({ prefilledEmail }: { prefilledEmail: string }) {
+  const { toast } = useToast();
   const [email, setEmail] = useState(prefilledEmail);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [resetUrl, setResetUrl] = useState<string | null>(null);
-  const [error, setError] = useState('');
+
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError('');
-
     try {
       const result = await apiFetch<{ message: string; resetUrl?: string }>('/api/auth/forgot-password', {
         method: 'POST',
@@ -29,9 +30,9 @@ function ForgotPasswordForm({ prefilledEmail }: { prefilledEmail: string }) {
       }
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message);
+        toast(err.message || 'Failed to send reset link. Please try again.', 'error');
       } else {
-        setError('An unexpected error occurred');
+        toast('An unexpected error occurred. Please try again.', 'error');
       }
     } finally {
       setLoading(false);
@@ -51,18 +52,6 @@ function ForgotPasswordForm({ prefilledEmail }: { prefilledEmail: string }) {
         <p className="mt-2 text-sm text-text-secondary leading-relaxed">
           If an account exists for <strong className="text-foreground">{email}</strong>, we&apos;ve sent a password reset link.
         </p>
-
-        {resetUrl && (
-          <div className="mt-4 w-full rounded-lg border border-primary/20 bg-primary/5 p-3 text-left">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">Dev Mode — Reset Link</p>
-            <a
-              href={resetUrl}
-              className="break-all text-xs text-primary underline transition-colors hover:text-primary-dark"
-            >
-              {resetUrl}
-            </a>
-          </div>
-        )}
 
         <Link
           href="/login"
@@ -112,11 +101,6 @@ function ForgotPasswordForm({ prefilledEmail }: { prefilledEmail: string }) {
           </div>
         </div>
 
-        {error && (
-          <div className="rounded-lg border border-danger/20 bg-danger-bg px-4 py-2.5 text-sm text-danger">
-            {error}
-          </div>
-        )}
 
         <button
           type="submit"

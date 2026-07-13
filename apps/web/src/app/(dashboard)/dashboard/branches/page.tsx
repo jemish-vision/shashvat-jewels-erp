@@ -19,6 +19,7 @@ import { CustomSelect } from '@/components/ui/custom-select';
 import { TablePagination } from '@/components/ui/table-pagination';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm';
+import { usePermissions } from '@/hooks/use-permissions';
 import { apiFetch } from '@/lib/api-client';
 
 interface BranchItem {
@@ -37,6 +38,8 @@ interface BranchItem {
 export default function BranchesManagementPage() {
   const { toast } = useToast();
   const { confirm } = useConfirm();
+  const { has } = usePermissions();
+  const canUpdate = has('branch:update');
   const [branches, setBranches] = useState<BranchItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -349,15 +352,30 @@ export default function BranchesManagementPage() {
                   </td>
 
                   <td className="p-4">
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                        b.isActive
-                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-danger/15 text-danger'
-                      }`}
+                    <button
+                      type="button"
+                      disabled={!canUpdate}
+                      onClick={() => handleToggleStatus(b)}
+                      className="group inline-flex items-center rounded-full focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                      title={
+                        canUpdate
+                          ? `Status: ${b.isActive ? 'Active' : 'Suspended'} — Click to toggle`
+                          : 'No permission to update status'
+                      }
+                      aria-label={b.isActive ? 'Active status toggle' : 'Suspended status toggle'}
                     >
-                      {b.isActive ? 'Active' : 'Suspended'}
-                    </span>
+                      <span
+                        className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full p-0.5 transition-colors duration-200 ease-in-out ${
+                          b.isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
+                            b.isActive ? 'translate-x-4' : 'translate-x-0'
+                          }`}
+                        />
+                      </span>
+                    </button>
                   </td>
 
                   <td className="p-4 text-right">

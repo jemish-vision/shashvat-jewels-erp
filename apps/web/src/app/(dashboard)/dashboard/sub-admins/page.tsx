@@ -161,7 +161,13 @@ export default function SubAdminsManagementPage() {
 
   async function handleSaveMember(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !selectedRoleId) return;
+    const branchAdminRole = roles.find(
+      (r) => r.name === 'Branch Administrator' || r.name.toLowerCase().includes('branch')
+    );
+    const effectiveRoleId =
+      adminType === 'BRANCH_ADMIN' && branchAdminRole ? branchAdminRole.id : selectedRoleId;
+
+    if (!name.trim() || !effectiveRoleId) return;
     setSubmitting(true);
     try {
       if (editingMember) {
@@ -169,7 +175,7 @@ export default function SubAdminsManagementPage() {
           method: 'PUT',
           body: JSON.stringify({
             name: name.trim(),
-            roleId: selectedRoleId,
+            roleId: effectiveRoleId,
             branchId: adminType === 'BRANCH_ADMIN' ? selectedBranchId || null : null,
           }),
         });
@@ -184,7 +190,7 @@ export default function SubAdminsManagementPage() {
             name: name.trim(),
             email: email.trim(),
             password,
-            roleId: selectedRoleId,
+            roleId: effectiveRoleId,
             branchId: adminType === 'BRANCH_ADMIN' ? selectedBranchId || null : null,
           }),
         });
@@ -402,13 +408,25 @@ export default function SubAdminsManagementPage() {
                       type="button"
                       disabled={!canUpdate}
                       onClick={() => handleToggleStatus(m)}
-                      className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                        m.isActive
-                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-danger/15 text-danger'
-                      }`}
+                      className="group inline-flex items-center rounded-full focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                      title={
+                        canUpdate
+                          ? `Status: ${m.isActive ? 'Active' : 'Suspended'} — Click to toggle`
+                          : 'No permission to update status'
+                      }
+                      aria-label={m.isActive ? 'Active status toggle' : 'Suspended status toggle'}
                     >
-                      {m.isActive ? 'Active' : 'Suspended'}
+                      <span
+                        className={`relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full p-0.5 transition-colors duration-200 ease-in-out ${
+                          m.isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
+                            m.isActive ? 'translate-x-4' : 'translate-x-0'
+                          }`}
+                        />
+                      </span>
                     </button>
                   </td>
 
@@ -536,22 +554,36 @@ export default function SubAdminsManagementPage() {
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary">
-                  Assigned Security Role *
-                </label>
-                <div className="mt-1.5">
-                  <CustomSelect
-                    value={selectedRoleId}
-                    onChange={(val) => setSelectedRoleId(val)}
-                    options={roles.map((r) => ({
-                      value: r.id,
-                      label: `${r.name} ${r.isSystem ? '(System Baseline)' : '(Custom Role Profile)'}`,
-                    }))}
-                    width="100%"
-                  />
+              {adminType === 'BRANCH_ADMIN' ? (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5">
+                  <div className="flex items-center gap-2">
+                    <MdSecurity size={18} className="text-primary flex-none" />
+                    <span className="text-xs font-bold text-foreground">
+                      Full Branch Operational Access
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] leading-relaxed text-text-secondary">
+                    Branch Administrators automatically receive complete operational permissions scoped to their assigned showroom location. No custom role required.
+                  </p>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary">
+                    Assigned Security Role *
+                  </label>
+                  <div className="mt-1.5">
+                    <CustomSelect
+                      value={selectedRoleId}
+                      onChange={(val) => setSelectedRoleId(val)}
+                      options={roles.map((r) => ({
+                        value: r.id,
+                        label: `${r.name} ${r.isSystem ? '(System Baseline)' : '(Custom Role Profile)'}`,
+                      }))}
+                      width="100%"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>

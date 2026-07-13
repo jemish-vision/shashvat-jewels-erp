@@ -16,7 +16,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const [suspendedBanner, setSuspendedBanner] = useState(false);
 
   useEffect(() => {
@@ -33,7 +35,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const user = await login(email, password);
+      const user = await login(email, password, rememberMe);
+
       toast('Signed in successfully', 'success');
       const targetRoute = user.role === 'SUPER_ADMIN' ? '/' : '/dashboard';
       router.push(targetRoute);
@@ -139,6 +142,32 @@ export default function LoginPage() {
                   {showPassword ? <MdVisibilityOff className="h-5 w-5" /> : <MdVisibility className="h-5 w-5" />}
                 </button>
               </div>
+            </div>
+
+            {/* Remember Me row */}
+            <div className="flex items-center justify-between">
+              <label className="flex cursor-pointer items-center gap-2.5 select-none" htmlFor="remember-me">
+                <div className="relative flex-none">
+                  <input
+                    id="remember-me"
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="peer sr-only"
+                  />
+                  <div className="h-4 w-4 rounded border border-input bg-background transition-all peer-checked:border-primary peer-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/30" />
+                  {rememberMe && (
+                    <svg
+                      className="pointer-events-none absolute inset-0 m-auto h-2.5 w-2.5 text-white"
+                      viewBox="0 0 10 8"
+                      fill="none"
+                    >
+                      <path d="M1 4l2.5 2.5L9 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </div>
+                <span className="text-xs font-semibold text-text-secondary">Remember Me</span>
+              </label>
             </div>
 
             {/* Submit button */}

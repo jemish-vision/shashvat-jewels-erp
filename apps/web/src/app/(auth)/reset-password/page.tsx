@@ -5,27 +5,29 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { site } from '@/config/site';
 import { apiFetch, ApiError } from '@/lib/api-client';
+import { useToast } from '@/components/ui/toast';
+
 
 function ResetPasswordForm({ token }: { token: string }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      toast('Passwords do not match', 'error');
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      toast('Password must be at least 8 characters', 'error');
       return;
     }
 
@@ -39,9 +41,9 @@ function ResetPasswordForm({ token }: { token: string }) {
       setSuccess(true);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message);
+        toast(err.message || 'Failed to reset password. The link may have expired.', 'error');
       } else {
-        setError('An unexpected error occurred');
+        toast('An unexpected error occurred. Please try again.', 'error');
       }
     } finally {
       setLoading(false);
@@ -157,11 +159,6 @@ function ResetPasswordForm({ token }: { token: string }) {
           </div>
         </div>
 
-        {error && (
-          <div className="rounded-lg border border-danger/20 bg-danger-bg px-4 py-2.5 text-sm text-danger">
-            {error}
-          </div>
-        )}
 
         <button
           type="submit"

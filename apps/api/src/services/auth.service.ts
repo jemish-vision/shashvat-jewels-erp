@@ -3,13 +3,17 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { prisma } from '../db/prisma.js';
 import type { SessionPayload } from '@shashvat/shared-types';
+import { sendPasswordResetEmail } from './email.service.js';
+
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET is not defined in environment variables.');
 }
 const ACCESS_TOKEN_EXPIRY = '15m';
-const REFRESH_TOKEN_EXPIRY = '7d';
+const REFRESH_TOKEN_EXPIRY = '7d';         // default (no remember me)
+const REMEMBER_ME_TOKEN_EXPIRY = '30d';    // remember me — 30 days
+
 
 // In-memory refresh token store. Switch to DB if multi-instance needed.
 const refreshTokens = new Map<string, { userId: string; expiresAt: Date }>();
@@ -21,17 +25,20 @@ function signAccessToken(payload: SessionPayload): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
 }
 
-function signRefreshToken(userId: string): string {
+function signRefreshToken(userId: string, rememberMe = false): string {
   if (!JWT_SECRET) {
     throw new Error('JWT_SECRET is not defined in environment variables.');
   }
-  const token = jwt.sign({ userId, type: 'refresh' }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiry = rememberMe ? REMEMBER_ME_TOKEN_EXPIRY : REFRESH_TOKEN_EXPIRY;
+  const daysMs = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+  const token = jwt.sign({ userId, type: 'refresh' }, JWT_SECRET, { expiresIn: expiry });
+  const expiresAt = new Date(Date.now() + daysMs);
   refreshTokens.set(token, { userId, expiresAt });
   return token;
 }
 
-export async function login(rawEmail: string, password: string) {
+
+export async function login(rawEmail: string, password: string, rememberMe = false) {
   const email = rawEmail.trim().toLowerCase();
   const superAdmin = await prisma.superAdmin.findUnique({ where: { email } });
   if (superAdmin) {
@@ -52,7 +59,8 @@ export async function login(rawEmail: string, password: string) {
       email: superAdmin.email,
     };
     const accessToken = signAccessToken(session);
-    const refreshToken = signRefreshToken(superAdmin.id);
+    const refreshToken = signRefreshToken(superAdmin.id, rememberMe);
+
     await prisma.superAdmin.update({
       where: { id: superAdmin.id },
       data: { lastLoginAt: new Date() },
@@ -111,7 +119,8 @@ export async function login(rawEmail: string, password: string) {
     role: tenantUser.role.name,
     permissions,
   });
-  const refreshToken = signRefreshToken(tenantUser.id);
+  const refreshToken = signRefreshToken(tenantUser.id, rememberMe);
+
 
   await prisma.user.update({
     where: { id: tenantUser.id },
@@ -209,7 +218,7 @@ export async function forgotPassword(email: string) {
   const tenantUser = !superAdmin ? await prisma.user.findUnique({ where: { email: normalizedEmail } }) : null;
 
   if (!superAdmin && !tenantUser) {
-    return { success: true as const, message: 'If this email is registered, you will receive a password reset link.' };
+    return { success: false as const, code: 'USER_NOT_FOUND' as const, message: 'User not found' };
   }
 
   const targetEmail = superAdmin ? superAdmin.email : tenantUser!.email;
@@ -227,10 +236,22 @@ export async function forgotPassword(email: string) {
   const baseUrl = process.env.APP_URL || 'http://localhost:3000';
   const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
-  console.log('─────────────────────────────────────────────');
-  console.log('  PASSWORD RESET LINK (dev mode):');
-  console.log(`  ${resetUrl}`);
-  console.log('─────────────────────────────────────────────');
+  // Send the reset email
+  try {
+    await sendPasswordResetEmail(targetEmail, resetToken);
+  } catch (emailErr) {
+    // Log the error but don't expose it to the caller — always return the same
+    // generic message to avoid leaking whether an email exists.
+    console.error('[Email] Failed to send password reset email:', emailErr);
+    // In dev, still print the link so developers can test without SMTP config.
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('─────────────────────────────────────────────');
+      console.log('  PASSWORD RESET LINK (email failed, dev fallback):');
+      console.log(`  ${resetUrl}`);
+      console.log('─────────────────────────────────────────────');
+    }
+  }
+
 
   return {
     success: true as const,

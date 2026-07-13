@@ -13,8 +13,9 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     }
 
     const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
-    const { email, password } = parsed.data;
-    const result = await authService.login(email, password);
+    const { email, password, rememberMe } = parsed.data;
+    const result = await authService.login(email, password, rememberMe);
+
 
     if (!result.success) {
       await prisma.platformAuditLog.create({
@@ -164,6 +165,14 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
     }
 
     const result = await authService.forgotPassword(parsed.data.email);
+    if (!result.success) {
+      res.status(400).json({
+        success: false,
+        error: { code: result.code, message: result.message },
+      });
+      return;
+    }
+    
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);

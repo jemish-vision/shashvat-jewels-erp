@@ -22,13 +22,16 @@ export interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<AuthUser>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<AuthUser>;
   logout: () => Promise<void>;
 }
+
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const REFRESH_TOKEN_KEY = 'shashvat_refresh_token';
+const REMEMBER_ME_KEY   = 'shashvat_remember_me';   // 'true' | absent
+
 
 function setCookie(name: string, value: string, maxAgeSeconds: number) {
   document.cookie = `${name}=${value}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
@@ -42,13 +45,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // On mount: try to restore session from stored refresh token
+  // On mount: restore session from localStorage (remember me) or sessionStorage (session only)
   useEffect(() => {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    // Prefer localStorage (remember me was checked); fall back to sessionStorage
+    const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+    const refreshToken = rememberMe
+      ? localStorage.getItem(REFRESH_TOKEN_KEY)
+      : sessionStorage.getItem(REFRESH_TOKEN_KEY);
+
     if (!refreshToken) {
       setIsLoading(false);
       return;
     }
+
+    const cookieMaxAge = rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60;
 
     (async () => {
       try {
@@ -58,15 +68,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         setAccessToken(data.accessToken);
-        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-        setCookie('auth-token', '1', 7 * 24 * 60 * 60);
+        // Rotate stored refresh token in the same storage
+        if (rememberMe) {
+          localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+        } else {
+          sessionStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+        }
+        setCookie('auth-token', '1', cookieMaxAge);
 
-        // Fetch user info
         const me = await apiFetch<MeResponse>('/api/auth/me');
         setUser(me);
-        setCookie('user-role', me.role, 7 * 24 * 60 * 60);
+        setCookie('user-role', me.role, cookieMaxAge);
       } catch {
         localStorage.removeItem(REFRESH_TOKEN_KEY);
+        localStorage.removeItem(REMEMBER_ME_KEY);
+        sessionStorage.removeItem(REFRESH_TOKEN_KEY);
         clearCookie('auth-token');
         clearCookie('user-role');
         setAccessToken(null);
@@ -76,16 +92,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
+
+  const login = useCallback(async (email: string, password: string, rememberMe = false) => {
     const data = await apiFetch<LoginResponse>('/api/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     });
 
     setAccessToken(data.accessToken);
-    localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-    setCookie('auth-token', '1', 7 * 24 * 60 * 60);
-    setCookie('user-role', data.session.role, 7 * 24 * 60 * 60);
+
+    // Cookie & token storage lifetime based on rememberMe
+    const cookieMaxAge = rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60;
+    if (rememberMe) {
+      // Persist across browser restarts
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+      localStorage.setItem(REMEMBER_ME_KEY, 'true');
+      sessionStorage.removeItem(REFRESH_TOKEN_KEY); // ensure no stale session entry
+    } else {
+      // Session-only: cleared when browser tab/window closes
+      sessionStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);  // ensure no stale persistent entry
+      localStorage.removeItem(REMEMBER_ME_KEY);
+    }
+    setCookie('auth-token', '1', cookieMaxAge);
+    setCookie('user-role', data.session.role, cookieMaxAge);
 
     const authUser: AuthUser = {
       userId: data.session.userId,
@@ -104,8 +134,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return authUser;
   }, []);
 
+
   const logout = useCallback(async () => {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    const refreshToken =
+      localStorage.getItem(REFRESH_TOKEN_KEY) ||
+      sessionStorage.getItem(REFRESH_TOKEN_KEY);
     if (refreshToken) {
       try {
         await apiFetch('/api/auth/logout', {
@@ -118,10 +151,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setAccessToken(null);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(REMEMBER_ME_KEY);
+    sessionStorage.removeItem(REFRESH_TOKEN_KEY);
     clearCookie('auth-token');
     clearCookie('user-role');
     setUser(null);
   }, []);
+
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout }}>
