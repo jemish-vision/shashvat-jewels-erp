@@ -1937,6 +1937,9 @@ Additional practices:
 12. Company onboarding (`company.service.ts`): creates company → seeds base currency, branch, system roles, permission matrix, chart of accounts — all scoped to new `companyId`.
 13. Barcode prefix includes company slug: `SASH-CERT-00001`.
 14. Seed data (`prisma/seed.ts`): one super admin, demo company, branches, roles, permissions, CoA, base currency.
+15. Directory UI/UX Standardization: All directory tables (`customers`, `vendors`, `branches`) must follow `branches/page.tsx` executive design — no colored initials logo boxes, display Code Badge + bold Name, use `<MdLocationOn>` pin icons, smooth status toggle switches, square action card buttons (`h-7 w-7 rounded-lg`), and an Executive View Profile Modal (`<MdVisibility>`) accessible even to read-only users.
+16. RBAC Synchronization: Any change to `PERMISSION_CATALOG` (`apps/api/src/lib/permissions.ts`) must be verified against backend endpoints in `apps/api/src/routes/tenant/*.routes.ts`. Use `requireAnyPermission('resource:list', 'resource:view')` on directory list routes (`GET /`).
+17. Multi-Tab Auth Persistence: Always store `shashvat_refresh_token` in `localStorage` inside `auth-context.tsx` and `api-client.ts` so opening links in new tabs/windows inherits the active session without throwing `UNAUTHORIZED`.
 
 ### Suggested Libraries
 

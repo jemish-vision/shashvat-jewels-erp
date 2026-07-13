@@ -45,13 +45,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // On mount: restore session from localStorage (remember me) or sessionStorage (session only)
+  // On mount: restore session from localStorage or sessionStorage
   useEffect(() => {
-    // Prefer localStorage (remember me was checked); fall back to sessionStorage
     const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
-    const refreshToken = rememberMe
-      ? localStorage.getItem(REFRESH_TOKEN_KEY)
-      : sessionStorage.getItem(REFRESH_TOKEN_KEY);
+    const refreshToken =
+      localStorage.getItem(REFRESH_TOKEN_KEY) ||
+      sessionStorage.getItem(REFRESH_TOKEN_KEY);
 
     if (!refreshToken) {
       setIsLoading(false);
@@ -68,12 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         setAccessToken(data.accessToken);
-        // Rotate stored refresh token in the same storage
-        if (rememberMe) {
-          localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-        } else {
-          sessionStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-        }
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
         setCookie('auth-token', '1', cookieMaxAge);
 
         const me = await apiFetch<MeResponse>('/api/auth/me');
@@ -101,17 +95,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setAccessToken(data.accessToken);
 
-    // Cookie & token storage lifetime based on rememberMe
     const cookieMaxAge = rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60;
+    // Always store refresh token in localStorage so opening links in new tabs/windows stays authenticated
+    localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+    sessionStorage.removeItem(REFRESH_TOKEN_KEY);
     if (rememberMe) {
-      // Persist across browser restarts
-      localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
       localStorage.setItem(REMEMBER_ME_KEY, 'true');
-      sessionStorage.removeItem(REFRESH_TOKEN_KEY); // ensure no stale session entry
     } else {
-      // Session-only: cleared when browser tab/window closes
-      sessionStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);  // ensure no stale persistent entry
       localStorage.removeItem(REMEMBER_ME_KEY);
     }
     setCookie('auth-token', '1', cookieMaxAge);

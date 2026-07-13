@@ -361,7 +361,12 @@ export default function SubAdminsManagementPage() {
                   </td>
 
                   <td className="p-4">
-                    {m.roleId ? (
+                    {m.adminType === 'BRANCH_ADMIN' ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-info/30 bg-info-bg px-3 py-1 text-xs font-bold text-info">
+                        <MdStore size={14} className="flex-none" />
+                        <span>All Branch Permissions (Auto-Assigned)</span>
+                      </span>
+                    ) : m.roleId ? (
                       <Link
                         href={`/dashboard/roles/${m.roleId}`}
                         title="View Role Permissions & Profile"
@@ -373,7 +378,7 @@ export default function SubAdminsManagementPage() {
                     ) : (
                       <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-foreground">
                         <MdSecurity size={13} className="text-primary" />
-                        {m.roleName}
+                        {m.roleName || 'No Custom Role'}
                       </span>
                     )}
                   </td>

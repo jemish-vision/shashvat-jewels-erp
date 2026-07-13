@@ -16,9 +16,18 @@ interface CustomSelectProps {
   placeholder?: string;
   className?: string;
   width?: string;
+  size?: 'sm' | 'md';
 }
 
-export function CustomSelect({ options, value, onChange, placeholder = 'Select...', className = '', width = '160px' }: CustomSelectProps) {
+export function CustomSelect({
+  options,
+  value,
+  onChange,
+  placeholder = 'Select...',
+  className = '',
+  width = '160px',
+  size = 'sm',
+}: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -36,19 +45,29 @@ export function CustomSelect({ options, value, onChange, placeholder = 'Select..
 
   const selected = options.find((o) => o.value === value);
 
+  const buttonClasses =
+    size === 'md'
+      ? 'flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-input bg-background px-3 text-sm text-foreground focus:border-primary focus:outline-none'
+      : 'field-compact flex w-full items-center justify-between gap-2';
+
+  const labelClasses =
+    size === 'md'
+      ? 'truncate text-sm font-medium text-foreground'
+      : 'truncate text-[11.5px] font-medium text-foreground';
+
   return (
     <div ref={ref} className={`relative ${className}`}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="field-compact flex w-full items-center justify-between gap-2"
+        className={buttonClasses}
         style={{ width }}
       >
-        <span className="truncate text-[11.5px] font-medium text-foreground">
+        <span className={labelClasses}>
           {selected?.label || placeholder}
         </span>
         <MdUnfoldMore
-          size={14}
+          size={size === 'md' ? 18 : 14}
           className={`flex-none text-text-muted transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
         />
       </button>
@@ -64,7 +83,9 @@ export function CustomSelect({ options, value, onChange, placeholder = 'Select..
                   onChange(opt.value);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center gap-2 px-3.5 py-[7px] text-[12px] font-medium transition-colors duration-150 hover:bg-background ${
+                className={`flex w-full items-center gap-2 px-3.5 ${
+                  size === 'md' ? 'py-2.5 text-sm' : 'py-[7px] text-[12px]'
+                } font-medium transition-colors duration-150 hover:bg-background ${
                   active ? 'text-primary' : 'text-text-strong-2'
                 }`}
               >

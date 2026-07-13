@@ -33,8 +33,10 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   });
 
   // On 401, attempt token refresh once
-  if (res.status === 401 && token) {
-    const refreshToken = localStorage.getItem('shashvat_refresh_token');
+  if (res.status === 401) {
+    const refreshToken =
+      localStorage.getItem('shashvat_refresh_token') ||
+      sessionStorage.getItem('shashvat_refresh_token');
     if (refreshToken) {
       try {
         const refreshRes = await fetch(`${env.apiUrl}/api/auth/refresh`, {

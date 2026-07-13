@@ -98,14 +98,22 @@ export default function CompaniesPage() {
     <div className="flex flex-col gap-5">
 
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="m-0 text-[22px] font-extrabold tracking-tight text-foreground">Companies</h1>
-          <p className="m-0 mt-[5px] text-[13px] font-medium text-text-secondary">
-            Manage all registered companies on the platform.
-          </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <MdBusiness size={24} />
+          </div>
+          <div>
+            <h1 className="text-xl font-black tracking-tight text-foreground">Companies</h1>
+            <p className="text-xs font-medium text-text-secondary">
+              Manage all registered companies on the platform.
+            </p>
+          </div>
         </div>
-        <Link href="/companies/new" className="btn-primary">
+        <Link
+          href="/companies/new"
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:brightness-110"
+        >
           <MdAdd size={16} />
           New Company
         </Link>

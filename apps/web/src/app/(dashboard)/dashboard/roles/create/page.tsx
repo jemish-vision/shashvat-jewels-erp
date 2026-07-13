@@ -20,28 +20,56 @@ interface PermissionItem {
 }
 
 const RESOURCE_LABELS: Record<string, string> = {
-  branch: 'Branches & Showrooms',
-  user: 'User Management',
-  role: 'Security Roles & RBAC',
-  currency: 'Multi-Currency & Forex',
+  settings: 'Company Settings Hub',
+  currency: 'Currencies & Exchange Rates',
   sequence: 'Numbering Sequences',
-  customer: 'Customer Directory',
-  vendor: 'Vendors & Suppliers',
-  inventory: 'Stock & Inventory',
   'certified-diamond': 'Certified Diamonds',
-  'loose-diamond': 'Loose Diamond Packets',
-  jewelry: 'Finished Jewelry',
-  purchase: 'Purchase Orders',
-  sale: 'Sales Invoices & POS',
-  memo: 'Consignment Memos',
-  hold: 'Diamond Reservations',
-  transfer: 'Branch Transfers',
-  manufacturing: 'Manufacturing Jobs',
-  accounting: 'Accounting Ledger',
-  report: 'Analytics & BI Reports',
+  'loose-diamond': 'Loose Diamonds',
+  jewelry: 'Jewelry',
+  inventory: 'Stock & Inventory',
+  purchase: 'Purchase',
+  sale: 'Sales',
+  memo: 'Memos',
+  hold: 'Holds',
+  transfer: 'Transfers',
+  manufacturing: 'Manufacturing',
+  customer: 'Customers',
+  vendor: 'Vendors',
+  accounting: 'Accounting',
+  payment: 'Payments & Receipts',
+  report: 'Reports',
   audit: 'Security Audit Trails',
-  notification: 'System Notifications',
+  role: 'Roles & Permissions',
+  branch: 'Branch Management',
+  user: 'User Management',
+  notification: 'Notifications',
 };
+
+const SIDEBAR_MODULE_ORDER = [
+  'certified-diamond',
+  'loose-diamond',
+  'jewelry',
+  'inventory',
+  'purchase',
+  'sale',
+  'memo',
+  'hold',
+  'transfer',
+  'manufacturing',
+  'customer',
+  'vendor',
+  'accounting',
+  'payment',
+  'report',
+  'role',
+  'branch',
+  'user',
+  'currency',
+  'sequence',
+  'audit',
+  'notification',
+  'settings',
+];
 
 export default function CreateRolePage() {
   const router = useRouter();
@@ -224,98 +252,149 @@ export default function CreateRolePage() {
         </div>
       </div>
 
-      {/* Search Modules Bar */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative w-full max-w-xs">
-          <MdSearch size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          <input
-            type="text"
-            placeholder="Filter module name..."
-            value={moduleFilter}
-            onChange={(e) => setModuleFilter(e.target.value)}
-            className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-xs text-foreground placeholder:text-text-muted outline-none focus:border-primary"
-          />
-        </div>
-
-        <div className="text-xs font-semibold text-text-secondary">
-          Selected Permissions: <span className="font-mono font-bold text-foreground">{selectedPermissions.length}</span>
-        </div>
-      </div>
-
-      {/* Manual Permission Matrix Grid */}
-      <div className="space-y-4">
-        {loading ? (
-          <div className="flex min-h-[200px] items-center justify-center">
-            <span className="text-xs font-bold text-text-secondary">Loading Permissions Catalog...</span>
+      {/* Permission Matrix Table Card */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        {/* Table Toolbar */}
+        <div className="flex flex-col gap-3 border-b border-border bg-muted/30 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:w-72">
+            <MdSearch size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              placeholder="Filter module name..."
+              value={moduleFilter}
+              onChange={(e) => setModuleFilter(e.target.value)}
+              className="w-full rounded-xl border border-border bg-background py-2 pl-9 pr-3 text-xs text-foreground placeholder:text-text-muted outline-none focus:border-primary"
+            />
           </div>
-        ) : (
-          Object.entries(groupedCatalog)
-            .filter(([resource]) =>
-              moduleFilter
-                ? resource.toLowerCase().includes(moduleFilter.toLowerCase()) ||
-                  (RESOURCE_LABELS[resource] || '').toLowerCase().includes(moduleFilter.toLowerCase())
-                : true
-            )
-            .map(([resource, perms]) => {
-              const keys = perms.map((p) => `${p.resource}:${p.action}`);
-              const allSelected = keys.every((k) => selectedPermissions.includes(k));
 
-              return (
-                <div
-                  key={resource}
-                  className="rounded-2xl border border-border bg-card p-5 shadow-sm transition-colors"
-                >
-                  <div className="flex items-center justify-between border-b border-border/60 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-black uppercase tracking-wider text-foreground">
-                        {RESOURCE_LABELS[resource] || resource}
-                      </span>
-                      <span className="rounded bg-muted px-2 py-0.5 font-mono text-[10px] text-text-secondary">
-                        {perms.length} actions
-                      </span>
-                    </div>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                const filteredEntries = Object.entries(groupedCatalog)
+                  .filter(([resource]) => Boolean(RESOURCE_LABELS[resource]))
+                  .filter(([resource]) =>
+                    moduleFilter
+                      ? resource.toLowerCase().includes(moduleFilter.toLowerCase()) ||
+                        (RESOURCE_LABELS[resource] || '').toLowerCase().includes(moduleFilter.toLowerCase())
+                      : true
+                  );
+                const allFilteredKeys = filteredEntries.flatMap(([, perms]) =>
+                  perms.map((p) => `${p.resource}:${p.action}`)
+                );
+                const isAllSelected = allFilteredKeys.every((k) => selectedPermissions.includes(k));
+                if (isAllSelected) {
+                  setSelectedPermissions(selectedPermissions.filter((k) => !allFilteredKeys.includes(k)));
+                } else {
+                  const set = new Set([...selectedPermissions, ...allFilteredKeys]);
+                  setSelectedPermissions(Array.from(set));
+                }
+              }}
+              className="rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-bold text-primary shadow-xs transition-all hover:bg-muted"
+            >
+              Toggle All Filtered
+            </button>
+            <div className="text-xs font-semibold text-text-secondary">
+              Selected: <span className="font-mono font-bold text-foreground">{selectedPermissions.length}</span>
+            </div>
+          </div>
+        </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleToggleCategory(resource)}
-                      className="text-xs font-bold text-primary hover:underline"
-                    >
-                      {allSelected ? 'Deselect All' : 'Select All'}
-                    </button>
-                  </div>
+        {/* Structured Table Layout */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-border bg-muted/50 text-[11px] font-extrabold uppercase tracking-wider text-text-secondary">
+                <th className="w-[220px] px-5 py-3">Module Name</th>
+                <th className="w-[130px] px-4 py-3 text-center">Quick Select</th>
+                <th className="px-5 py-3">Available Permissions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {loading ? (
+                <tr>
+                  <td colSpan={3} className="p-8 text-center text-xs font-bold text-text-secondary">
+                    Loading Permissions Catalog...
+                  </td>
+                </tr>
+              ) : (
+                Object.entries(groupedCatalog)
+                  .filter(([resource]) => Boolean(RESOURCE_LABELS[resource]))
+                  .filter(([resource]) =>
+                    moduleFilter
+                      ? resource.toLowerCase().includes(moduleFilter.toLowerCase()) ||
+                        (RESOURCE_LABELS[resource] || '').toLowerCase().includes(moduleFilter.toLowerCase())
+                      : true
+                  )
+                  .sort(([resA], [resB]) => {
+                    const indexA = SIDEBAR_MODULE_ORDER.indexOf(resA);
+                    const indexB = SIDEBAR_MODULE_ORDER.indexOf(resB);
+                    const aPos = indexA === -1 ? 999 : indexA;
+                    const bPos = indexB === -1 ? 999 : indexB;
+                    return aPos - bPos;
+                  })
+                  .map(([resource, perms]) => {
+                    const keys = perms.map((p) => `${p.resource}:${p.action}`);
+                    const allSelected = keys.every((k) => selectedPermissions.includes(k));
 
-                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {perms.map((perm) => {
-                      const key = `${perm.resource}:${perm.action}`;
-                      const isChecked = selectedPermissions.includes(key);
+                    return (
+                      <tr key={resource} className="transition-colors hover:bg-muted/30">
+                        <td className="align-middle px-5 py-3.5">
+                          <div className="text-xs font-extrabold text-foreground">
+                            {RESOURCE_LABELS[resource] || resource}
+                          </div>
+                          <div className="mt-0.5 text-[10px] font-semibold text-text-muted">
+                            {perms.length} actions available
+                          </div>
+                        </td>
+                        <td className="align-middle px-4 py-3.5 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCategory(resource)}
+                            className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-bold transition-all ${
+                              allSelected
+                                ? 'bg-primary/15 text-primary'
+                                : 'border border-border bg-background text-text-secondary hover:bg-muted hover:text-foreground'
+                            }`}
+                          >
+                            {allSelected ? 'All Selected' : 'Select All'}
+                          </button>
+                        </td>
+                        <td className="align-middle px-5 py-3.5">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {perms.map((perm) => {
+                              const key = `${perm.resource}:${perm.action}`;
+                              const isChecked = selectedPermissions.includes(key);
 
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => handleTogglePermission(key)}
-                          className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all ${
-                            isChecked
-                              ? 'border-primary/40 bg-primary/10 text-foreground font-semibold shadow-sm'
-                              : 'border-border/70 bg-background text-text-secondary hover:border-border'
-                          }`}
-                        >
-                          {isChecked ? (
-                            <MdCheckCircle size={18} className="text-primary flex-none" />
-                          ) : (
-                            <MdRadioButtonUnchecked size={18} className="text-text-muted flex-none" />
-                          )}
-                          <span className="text-xs capitalize">
-                            {perm.action.replace('-', ' ')}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })
-        )}
+                              return (
+                                <button
+                                  key={key}
+                                  type="button"
+                                  onClick={() => handleTogglePermission(key)}
+                                  className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                                    isChecked
+                                      ? 'border-primary/40 bg-primary/10 text-primary shadow-2xs dark:bg-primary/15'
+                                      : 'border-border bg-background text-text-secondary hover:border-text-muted hover:text-foreground'
+                                  }`}
+                                >
+                                  {isChecked ? (
+                                    <MdCheckCircle size={15} className="flex-none text-primary" />
+                                  ) : (
+                                    <MdRadioButtonUnchecked size={15} className="flex-none text-text-muted" />
+                                  )}
+                                  <span className="capitalize">{perm.action.replace('-', ' ')}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

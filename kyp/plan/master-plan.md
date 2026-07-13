@@ -28,7 +28,7 @@ Code audit revealed plan was stale. Key delta:
 | 01 | Foundation & Database Core | — | done ✓ | Full schema (54 models), shared-types, app skeleton, test harness |
 | 02 | Super Admin Platform Portal | 01 | done ✓ | All phases complete. Unified Super/Tenant Login, auto Company Admin seeding, password toggle, custom confirm modal |
 | 03 | Company Onboarding, Tenant Auth & RBAC | 02 | done ✓ | All phases complete: transactional onboarding seed, tenant isolation extension, mid-session suspension check, dynamic RBAC sidebar & tenant shell v1 |
-| 04 | Tenant Masters & ERP Shell | 03 | scaffolded | Settings/customers/vendors routes empty. Web settings pages empty |
+| 04 | Tenant Masters & ERP Shell | 03 | done ✓ | All phases complete: Customers/Vendors CRUD, Settings Hub, Currencies & Rates, Document Numbering Sequences, MinIO Logo Uploads, UI theme & empty states |
 | 05 | Inventory Core & Certified Diamonds | 04 | scaffolded | Certified diamond routes/controller/schema empty. Web pages empty |
 | 06 | Purchases | 05 | scaffolded | Route/controller empty. Web purchases pages empty |
 | 07 | Sales (POS) | 05 | scaffolded | Route/controller empty. Web sales pages empty |
@@ -85,6 +85,8 @@ Phases:
 ## Module 04 — Tenant Masters & ERP Shell
 
 **Goal:** the ERP looks and navigates like the approved demo; Company Admin can manage branches, users, roles, customers, vendors, currencies.
+
+Status: planned — branches/roles/users already shipped (Module 03 overshoot). Detail: [module-04-tenant-masters/module-plan.md](module-04-tenant-masters/module-plan.md)
 
 Phases:
 1. Backend: CRUD APIs — branches, users (+ branch admin assignment), roles/permissions, customers, vendors, currencies + exchange rates, number sequences, media upload (MinIO)

@@ -26,17 +26,34 @@ import {
   MdSecurity,
   MdPeople,
   MdStore,
+  MdSettings,
 } from 'react-icons/md';
 
 export function TenantSidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const { has } = usePermissions();
+  const { has, permissions, isCompanyAdmin } = usePermissions();
   const [search, setSearch] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
 
   function isActive(href: string) {
     return href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href);
+  }
+
+  function canAccessNavItem(permission?: string): boolean {
+    if (!permission || isCompanyAdmin || has(permission)) return true;
+    if (permission === 'settings:view') {
+      return permissions.some(
+        (p) => p.startsWith('settings:') || p.startsWith('currency:') || p.startsWith('sequence:')
+      );
+    }
+    const resource = permission.split(':')[0];
+    if (resource) {
+      return permissions.some(
+        (p) => p === `${resource}:list` || p === `${resource}:view` || p.startsWith(`${resource}:`)
+      );
+    }
+    return false;
   }
 
   const iconMap: Record<string, React.ReactNode> = {
@@ -58,6 +75,7 @@ export function TenantSidebar() {
     security: <MdSecurity size={16} />,
     people: <MdPeople size={16} />,
     store: <MdStore size={16} />,
+    settings: <MdSettings size={16} />,
   };
 
   const q = search.trim().toLowerCase();
@@ -67,7 +85,7 @@ export function TenantSidebar() {
     .map((g) => ({
       ...g,
       items: g.items
-        .filter((it) => !it.permission || has(it.permission))
+        .filter((it) => canAccessNavItem(it.permission))
         .filter((it) => !q || it.label.toLowerCase().includes(q)),
     }))
     .filter((g) => g.items.length > 0);

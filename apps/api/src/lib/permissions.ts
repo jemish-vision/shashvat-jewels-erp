@@ -8,7 +8,6 @@ export interface PermissionDefinition {
 export const PERMISSION_CATALOG: PermissionDefinition[] = [
   // Branch
   { resource: 'branch', action: 'list' },
-  { resource: 'branch', action: 'view' },
   { resource: 'branch', action: 'create' },
   { resource: 'branch', action: 'update' },
   { resource: 'branch', action: 'delete' },
@@ -35,14 +34,10 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { resource: 'currency', action: 'delete' },
 
   // Sequence
-  { resource: 'sequence', action: 'list' },
   { resource: 'sequence', action: 'view' },
-  { resource: 'sequence', action: 'create' },
   { resource: 'sequence', action: 'update' },
-  { resource: 'sequence', action: 'delete' },
 
   // Settings
-  { resource: 'settings', action: 'list' },
   { resource: 'settings', action: 'view' },
   { resource: 'settings', action: 'update' },
 
@@ -185,6 +180,11 @@ export const BRANCH_ADMIN_PERMISSIONS: PermissionDefinition[] = PERMISSION_CATAL
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function syncPermissionCatalog(tx: any) {
+  // 1. Upsert all catalog permissions — add new ones, skip existing ones.
+  // We intentionally do NOT delete removed permissions here because they
+  // may be referenced by RolePermission foreign keys and deleting them
+  // would violate constraints. Obsolete permissions are simply filtered
+  // out of the catalog returned to the UI.
   for (const item of PERMISSION_CATALOG) {
     await tx.permission.upsert({
       where: {
@@ -201,5 +201,41 @@ export async function syncPermissionCatalog(tx: any) {
     });
   }
 
-  return tx.permission.findMany();
+  const allPerms: { id: string; resource: string; action: string }[] = await tx.permission.findMany();
+  const permMap = new Map<string, string>();
+  for (const p of allPerms) {
+    permMap.set(`${p.resource}:${p.action}`, p.id);
+  }
+
+  // 2. Re-sync system role permissions so Company Admin and Branch Admin
+  //    always match PERMISSION_CATALOG (fixes stale roles after catalog changes).
+  const systemRoles: { id: string; name: string }[] = await tx.role.findMany({
+    where: { isSystem: true },
+  });
+
+  for (const role of systemRoles) {
+    const isCompanyAdminRole =
+      role.name === 'Company Administrator' || role.name === 'COMPANY_ADMIN';
+    const isBranchAdminRole =
+      role.name === 'Branch Administrator' || role.name === 'BRANCH_ADMIN';
+
+    if (!isCompanyAdminRole && !isBranchAdminRole) continue;
+
+    const targetPerms = isCompanyAdminRole
+      ? COMPANY_ADMIN_PERMISSIONS
+      : BRANCH_ADMIN_PERMISSIONS;
+
+    // Delete all existing role permissions and re-insert from current catalog
+    await tx.rolePermission.deleteMany({ where: { roleId: role.id } });
+    for (const p of targetPerms) {
+      const permId = permMap.get(`${p.resource}:${p.action}`);
+      if (permId) {
+        await tx.rolePermission.create({
+          data: { roleId: role.id, permissionId: permId },
+        });
+      }
+    }
+  }
+
+  return allPerms;
 }

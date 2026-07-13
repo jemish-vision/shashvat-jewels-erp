@@ -327,7 +327,7 @@ export default function BranchesManagementPage() {
                   <td className="p-4 text-text-secondary">
                     <div className="flex items-center gap-1.5">
                       <MdLocationOn size={14} className="text-text-muted" />
-                      <span>{[b.city, b.address].filter(Boolean).join(', ') || 'Showroom Location'}</span>
+                      <span>{b.city || 'Showroom Location'}</span>
                     </div>
                     {b.phone && (
                       <div className="flex items-center gap-1.5 mt-1 text-[11px] font-mono">

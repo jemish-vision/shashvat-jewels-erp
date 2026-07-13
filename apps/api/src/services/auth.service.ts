@@ -4,13 +4,14 @@ import crypto from 'crypto';
 import { prisma } from '../db/prisma.js';
 import type { SessionPayload } from '@shashvat/shared-types';
 import { sendPasswordResetEmail } from './email.service.js';
+import { COMPANY_ADMIN_PERMISSIONS, BRANCH_ADMIN_PERMISSIONS } from '../lib/permissions.js';
 
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET is not defined in environment variables.');
 }
-const ACCESS_TOKEN_EXPIRY = '15m';
+const ACCESS_TOKEN_EXPIRY = '1d';
 const REFRESH_TOKEN_EXPIRY = '7d';         // default (no remember me)
 const REMEMBER_ME_TOKEN_EXPIRY = '30d';    // remember me — 30 days
 
@@ -94,9 +95,26 @@ export async function login(rawEmail: string, password: string, rememberMe = fal
     return { success: false as const, code: 'ACCOUNT_DISABLED' as const };
   }
 
-  const permissions = tenantUser.role.permissions.map(
-    (rp) => `${rp.permission.resource}:${rp.permission.action}`
-  );
+  // Company Admin = the 'Company Administrator' system role ALWAYS gets full permissions
+  // regardless of whether a branchId is accidentally set on their user record
+  const isCompanyAdmin =
+    tenantUser.role.isSystem &&
+    (tenantUser.role.name === 'Company Administrator' || tenantUser.role.name === 'COMPANY_ADMIN');
+
+  // Branch Admin = NOT company admin AND (has a branchId OR is the Branch Administrator system role)
+  const isBranchAdmin =
+    !isCompanyAdmin &&
+    (Boolean(tenantUser.branchId) ||
+      (tenantUser.role.isSystem && tenantUser.role.name === 'Branch Administrator') ||
+      tenantUser.role.name === 'BRANCH_ADMIN');
+
+  const permissions = isCompanyAdmin
+    ? COMPANY_ADMIN_PERMISSIONS.map((p) => `${p.resource}:${p.action}`)
+    : isBranchAdmin
+      ? BRANCH_ADMIN_PERMISSIONS.map((p) => `${p.resource}:${p.action}`)
+      : tenantUser.role.permissions.map(
+          (rp) => `${rp.permission.resource}:${rp.permission.action}`
+        );
 
   const session = {
     userId: tenantUser.id,
@@ -192,9 +210,27 @@ export async function getSession(userId: string) {
     return null;
   }
 
-  const permissions = tenantUser.role.permissions.map(
-    (rp) => `${rp.permission.resource}:${rp.permission.action}`
-  );
+  const isCompanyAdmin =
+    tenantUser.role.isSystem &&
+    (tenantUser.role.name === 'Company Administrator' || tenantUser.role.name === 'COMPANY_ADMIN');
+
+  const isBranchAdmin =
+    !isCompanyAdmin &&
+    (Boolean(tenantUser.branchId) ||
+      (tenantUser.role.isSystem && tenantUser.role.name === 'Branch Administrator') ||
+      tenantUser.role.name === 'BRANCH_ADMIN');
+
+  console.log(`[AUTH REFRESH] user=${tenantUser.email} role="${tenantUser.role.name}" isSystem=${tenantUser.role.isSystem} branchId=${tenantUser.branchId} => isCompanyAdmin=${isCompanyAdmin} isBranchAdmin=${isBranchAdmin} permCount=${
+    isCompanyAdmin ? COMPANY_ADMIN_PERMISSIONS.length : isBranchAdmin ? BRANCH_ADMIN_PERMISSIONS.length : tenantUser.role.permissions.length
+  }`);
+
+  const permissions = isCompanyAdmin
+    ? COMPANY_ADMIN_PERMISSIONS.map((p) => `${p.resource}:${p.action}`)
+    : isBranchAdmin
+      ? BRANCH_ADMIN_PERMISSIONS.map((p) => `${p.resource}:${p.action}`)
+      : tenantUser.role.permissions.map(
+          (rp) => `${rp.permission.resource}:${rp.permission.action}`
+        );
 
   return {
     userId: tenantUser.id,

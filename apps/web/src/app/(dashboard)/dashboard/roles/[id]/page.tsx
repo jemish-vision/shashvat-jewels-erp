@@ -36,9 +36,13 @@ interface RoleDetail {
 }
 
 const RESOURCE_LABELS: Record<string, string> = {
+  settings: 'Company Settings Hub',
+  currency: 'Currencies & Exchange Rates',
+  sequence: 'Numbering Sequences',
   'certified-diamond': 'Certified Diamonds',
   'loose-diamond': 'Loose Diamonds',
   jewelry: 'Jewelry',
+  inventory: 'Stock & Inventory',
   purchase: 'Purchase',
   sale: 'Sales',
   memo: 'Memos',
@@ -48,7 +52,9 @@ const RESOURCE_LABELS: Record<string, string> = {
   customer: 'Customers',
   vendor: 'Vendors',
   accounting: 'Accounting',
+  payment: 'Payments & Receipts',
   report: 'Reports',
+  audit: 'Security Audit Trails',
   role: 'Roles & Permissions',
   branch: 'Branch Management',
   user: 'User Management',
@@ -59,6 +65,7 @@ const SIDEBAR_MODULE_ORDER = [
   'certified-diamond',
   'loose-diamond',
   'jewelry',
+  'inventory',
   'purchase',
   'sale',
   'memo',
@@ -68,11 +75,16 @@ const SIDEBAR_MODULE_ORDER = [
   'customer',
   'vendor',
   'accounting',
+  'payment',
   'report',
   'role',
   'branch',
   'user',
+  'currency',
+  'sequence',
+  'audit',
   'notification',
+  'settings',
 ];
 
 export default function RolePermissionMatrixPage() {
