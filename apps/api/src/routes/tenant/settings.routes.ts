@@ -9,7 +9,7 @@ const router = Router();
 
 router.get(
   '/sequences',
-  requireAnyPermission('settings:view', 'settings:update', 'sequence:view', 'sequence:update'),
+  requireAnyPermission('settings:view', 'settings:update', 'sequence:list', 'sequence:view', 'sequence:update'),
   listSequencesHandler
 );
 router.patch(

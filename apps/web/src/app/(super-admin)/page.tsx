@@ -106,48 +106,54 @@ export default function SuperAdminDashboard() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {/* Total Tenants */}
-          <div className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
+          <div className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:shadow-md hover:shadow-primary/5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">
                 Total Companies
               </span>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform duration-200 group-hover:scale-110">
                 <MdBusiness className="h-5 w-5" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-black tracking-tight text-foreground">{stats.total}</span>
+              <span className="text-xs font-bold text-primary">
+                {trialCount > 0 ? `${trialCount} in trial` : 'Registered tenants'}
+              </span>
             </div>
           </div>
 
           {/* Active Companies */}
-          <div className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all hover:border-emerald-500/40 hover:shadow-md">
+          <div className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-500 hover:shadow-md hover:shadow-emerald-500/5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">
                 Active Companies
               </span>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 transition-transform group-hover:scale-110 dark:text-emerald-400">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 transition-transform duration-200 group-hover:scale-110 dark:text-emerald-400">
                 <MdCheckCircle className="h-5 w-5" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-black tracking-tight text-foreground">{activeCount}</span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                {activePct}% operational
+              </span>
             </div>
           </div>
 
           {/* Suspended / Inactive Tenants */}
-          <div className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all hover:border-amber-500/40 hover:shadow-md">
+          <div className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500 hover:shadow-md hover:shadow-amber-500/5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-text-secondary">
                 Restricted / Hold
               </span>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-transform group-hover:scale-110 dark:text-amber-400">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 transition-transform duration-200 group-hover:scale-110 dark:text-amber-400">
                 <MdBlock className="h-5 w-5" />
               </div>
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-3xl font-black tracking-tight text-foreground">{suspendedCount + cancelledCount}</span>
-              <span className="text-xs font-bold text-text-secondary">
+              <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
                 {suspendedCount} suspended, {cancelledCount} cancelled
               </span>
             </div>

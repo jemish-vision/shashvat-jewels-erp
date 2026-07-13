@@ -34,7 +34,7 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { resource: 'currency', action: 'delete' },
 
   // Sequence
-  { resource: 'sequence', action: 'view' },
+  { resource: 'sequence', action: 'list' },
   { resource: 'sequence', action: 'update' },
 
   // Settings

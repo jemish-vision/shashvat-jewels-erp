@@ -77,6 +77,7 @@ export default function TenantSettingsPage() {
   // Module 3: Document Numbering Sequences
   const canViewSequences =
     isCompanyAdmin ||
+    has('sequence:list') ||
     has('sequence:view') ||
     has('sequence:update') ||
     has('settings:update');

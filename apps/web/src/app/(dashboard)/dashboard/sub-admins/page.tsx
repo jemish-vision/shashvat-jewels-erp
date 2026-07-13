@@ -364,7 +364,7 @@ export default function SubAdminsManagementPage() {
                     {m.adminType === 'BRANCH_ADMIN' ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-info/30 bg-info-bg px-3 py-1 text-xs font-bold text-info">
                         <MdStore size={14} className="flex-none" />
-                        <span>All Branch Permissions (Auto-Assigned)</span>
+                        <span>All Branch Permissions</span>
                       </span>
                     ) : m.roleId ? (
                       <Link

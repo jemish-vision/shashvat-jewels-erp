@@ -198,48 +198,48 @@ export default function VendorsManagementPage() {
 
       {/* Quick Summary Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="group rounded-2xl border border-border bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Total Vendors
             </span>
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform duration-200 group-hover:scale-110">
               <MdLocalShipping size={18} />
             </span>
           </div>
           <p className="mt-2 text-2xl font-bold text-foreground">{stats.total}</p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="group rounded-2xl border border-border bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-500/50 hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Local Suppliers
             </span>
-            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 transition-transform duration-200 group-hover:scale-105 dark:text-emerald-400">
               LOCAL
             </span>
           </div>
           <p className="mt-2 text-2xl font-bold text-foreground">{stats.local}</p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="group rounded-2xl border border-border bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-purple-500/50 hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Import Suppliers
             </span>
-            <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-bold text-purple-600 dark:text-purple-400">
+            <span className="rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-bold text-purple-600 transition-transform duration-200 group-hover:scale-105 dark:text-purple-400">
               IMPORT
             </span>
           </div>
           <p className="mt-2 text-2xl font-bold text-foreground">{stats.imports}</p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="group rounded-2xl border border-border bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500/50 hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Contractors
             </span>
-            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-600 transition-transform duration-200 group-hover:scale-105 dark:text-amber-400">
               JOB WORK
             </span>
           </div>
